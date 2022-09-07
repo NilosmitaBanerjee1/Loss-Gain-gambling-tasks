@@ -1,0 +1,31 @@
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="/Users/akira/Desktop/Pilot-Experiments/RiskyLossMain-main/pilot1/code/experiment/configurations/customLoss.css">
+  <link rel="stylesheet" href=>
+
+	<title>Spin Wheel</title>
+</head>
+<body>
+	<button id="spin">Spin</button>
+	<span class="arrow"></span>
+<div id = "probYellow_amount">
+	<div class = "pie-chart" style="background: conic-gradient(rgb(0, 221, 255) 0% 25%, rgb(0, 221, 255) 25% 100%);"></div>
+</div>
+</body>
+
+<script>
+let container = document.getElementById("probYellow_amount");
+let btn = document.getElementById("spin");
+let number = Math.ceil(Math.random() * 1000);
+
+btn.onclick = function () {
+container.style.transform = "rotate(" + number + "deg)";
+number += Math.ceil(Math.random() * 1000);
+}
+
+</script>
+</html>

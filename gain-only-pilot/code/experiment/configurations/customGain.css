@@ -1,0 +1,763 @@
+/* define some global variables
+To define a global variable, add two hypens (-) to its name.
+The variable can be used later on by using the var() expression.
+*/
+
+:root {
+
+  /***************************************************
+  The overall game interface
+  ***************************************************/
+  /* the overall size of the game interface */
+  --interface-size: 710px;
+
+  /* the x, y coordinates of the center of the interface */
+  --interface-center-x: calc(var(--interface-size)/2);
+  --interface-center-y: calc(var(--interface-size)/2);
+
+  /***************************************************
+  Parameters to control the start button
+  ***************************************************/
+  /* the size of the start button */
+  --start-button-height:50px;
+  --start-button-width:200px;
+  --start-button-border-width:3px;
+
+  /* the total size of the start button when including the borders */
+  --start-button-total-height: calc(var(--start-button-height) + 2*var(--start-button-border-width));
+  --start-button-total-width: calc(var(--start-button-width) + 2*var(--start-button-border-width));
+
+  /* determine the location of the top-left corner of the start button*/
+  --start-button-pos-x: calc(var(--interface-center-x) - var(--start-button-total-width)/2);
+  
+  
+  /***************************************************
+  Parameters to control the start button -- circle shape (NOTE: Does not accommodate the text and looks a bit weird)
+  **************************************************
+  
+  --start-button-size: 30px; 
+  /* the width of the border 
+  --start-button-border-width: 2px;
+
+  /* position of the star-button 
+  --start-button-loc-x: var(--interface-center-x);
+  --start-button-loc-y: var(--interface-center-y);*/
+  
+  /***************************************************
+  Parameters to control the start message
+  ***************************************************/
+
+  --start-message-height: 30px;
+  /* make the text box as wide as the whole interface */
+  --start-message-width: calc(var(--interface-size));
+  --start-message-y: calc(var(--interface-center-y) - 80px);
+
+
+
+  /***************************************************
+  Parameters to control the locations of 4 info circles
+  ***************************************************/
+  /* determine all 4 possible locations for the info circles - solution without the --loc-radius*/
+
+  --loc1-center-x: calc(var(--interface-center-x) / 2) / 1.5;
+  --loc1-center-y: var(--loc1-center-x);
+
+  --loc2-center-x: calc(var(--interface-center-x) * 1.5);
+  --loc2-center-y: var(--loc1-center-x);
+
+  --loc3-center-x: calc(var(--interface-center-x) * 1.5);
+  --loc3-center-y: var(--loc3-center-x);
+
+  --loc4-center-x: calc(var(--interface-center-x) / 2) / 1.5;
+  --loc4-center-y: var(--loc3-center-x);
+
+  /***************************************************
+  Parameters that control the appearance of the information boxes
+  ***************************************************/
+  /* the size of the info box */
+  --info-box-size: 190px;
+
+  /* the width of the border */
+  --info-box-border-width: 3px;
+  /* the total size of the info box, including the borders */
+  --info-box-total-size: calc(var(--info-box-size) + 2*var(--info-box-border-width));
+
+  /***************************************************
+  Parameters that control the appearance of the pie charts
+  ***************************************************/
+  /* the size of the pie chart, make it a bit smaller than the info box */
+  --pie-chart-size: 160px; 
+
+  /***************************************************
+  Parameters that control the appearance of the choice buttons
+  ***************************************************/
+  /* the size of the choice buttons */
+  --choice-button-height: 50px;
+  --choice-button-width: 50px;
+  --choice-button-border-width: 3px;
+  
+
+  /* the total size of the choice buttons when including the borders */
+  --choice-button-total-height: calc(var(--choice-button-height) + 2*var(--choice-button-border-width));
+  --choice-button-total-width: calc(var(--choice-button-width) + 2*var(--choice-button-border-width));
+
+  /* determine the locations of the choice buttons*/
+
+  /* define the horizontal distance between the choice buttons*/
+  --choice-button-gap: 25px;
+
+/* compute the location of the top-left corner of the left choice button */
+  --choice-button-left-pos-x: calc(var(--interface-center-x) - var(--choice-button-gap) * 2 - var(--choice-button-total-width));
+  --choice-button-left-pos-y: calc(var(--interface-center-y) - var(--choice-button-total-height)/1);
+
+/* compute the location of the top-left corner of the right choice button */
+  --choice-button-right-pos-x: calc(var(--interface-center-x) + var(--choice-button-gap)/2);
+  --choice-button-right-pos-y: calc(var(--interface-center-y) - var(--choice-button-total-height)/1);
+  
+  /***************************************************
+  Parameters that control the appearance of texts
+  ***************************************************/
+  --text-font-size: 15px;
+  --text-box-width: calc(2 * var(--choice-button-total-width) + 2 * var(--choice-button-gap));
+  --text-box-height: var(--choice-button-height) ;
+
+  /* compute the location of the top-left corner of the text box */
+  --text-box-pos-x: var(--choice-button-left-pos-x);
+  --text-box-pos-y: calc(var(--choice-button-left-pos-y) + var(--text-box-height));
+
+
+/***************************************************
+  Information boxes during the outcome phase
+  ***************************************************/
+  /* the size of the circles will be the same as during the decision phase */
+  /* the horizontal distance between two info boxes */
+  --info-box-gap: 50px;
+
+  /* compute the location of each outcome info box */
+  
+  --info-gambleBlue-outcome-center-x: calc(var(--interface-center-x) + var(--info-box-total-size));
+  --info-gambleBlue-outcome-center-y: var(--interface-center-y) - var(--info-box-gap);
+  
+  --info-probBlue-outcome-center-x: var(--interface-center-x) - var(--info-box-total-size);
+  --info-probBlue-outcome-center-y: var(--interface-center-y) - var(--info-box-gap);
+
+  --info-gambleYellow-outcome-center-x: calc(var(--interface-center-x) + var(--info-box-total-size));
+  --info-gambleYellow-outcome-center-y: var(--interface-center-y) - var(--info-box-gap);
+
+  --info-probYellow-outcome-center-x: var(--interface-center-x) - var(--info-box-total-size);
+  --info-probYellow-outcome-center-y: var(--interface-center-y) - var(--info-box-gap);
+
+  /***************************************************
+  Texts to show win or loss amount.
+  ***************************************************/
+
+  /*determine the size of the texts showing the outcome*/
+  --outcome-text-width: var(--info-box-total-size);
+  --outcome-text-height: var(--choice-button-height);
+  
+  
+  /* determine the location of the text boxes.
+  Present the loss amount above the loss amount information,
+  the neutral amount above the probability information,
+  and the win amount above the win amount information.*/
+
+  --gambleBlueAmount-text-center-x: var(--info-gambleBlue-outcome-center-x);
+  --gambleBlueAmount-text-center-y: calc(var(--info-gambleBlue-outcome-center-y) - var(--info-box-total-size)/2 - var(--outcome-text-height)/2);
+
+  --probBlue-text-center-x: var(--info-probBlue-outcome-center-x);
+  --probBlue-text-center-y: calc(var(--info-probBlue-outcome-center-y) - var(--info-box-total-size)/2 - var(--outcome-text-height)/2);
+
+  --gambleYellowAmount-text-center-x: var(--info-gambleYellow-outcome-center-x);
+  --gambleYellowAmount-text-center-y: calc(var(--info-gambleYellow-outcome-center-y) - var(--info-box-total-size)/2 - var(--outcome-text-height)/2);
+
+  --probYellow-text-center-x: var(--info-probYellow-outcome-center-x);
+  --probYellow-text-center-y: calc(var(--info-probYellow-outcome-center-y) - var(--info-box-total-size)/2 - var(--outcome-text-height)/2);
+
+  /***************************************************
+  Text reminder of the choice during the outcome phase
+  ***************************************************/
+
+  /*determine the size of the texts showing the outcome*/
+  --choice-reminder-width: var(--interface-size);
+  --choice-reminder-height: var(--choice-button-height);
+
+  /*determine the location of the center*/
+  --choice-reminder-center-y: calc(var(--neutral-text-center-y) - var(--choice-reminder-height)*2);
+
+  
+}
+
+/***************************************************
+ the overall game interface
+***************************************************/
+.game-interface{
+  width: var(--interface-size);
+  height: var(--interface-size);
+  font-family: sans-serif;
+  position: relative;
+}
+
+/***************************************************
+the start button
+***************************************************/
+#start-button{
+  width: var(--start-button-width);
+  height: var(--start-button-height);
+  border: solid var(--start-button-border-width) lightgray;
+  position: absolute;
+  left: var(--start-button-pos-x);
+  top: var(--start-button-pos-x);
+}
+
+/* center the text in the start button */
+#start-button p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-font-size);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+/* change colour up on hover */
+#start-button:hover {
+  border: solid var(--start-button-border-width) rgb(27, 125, 200);
+  cursor: pointer;
+}
+
+
+/* create a circle start button --> Continued with the old start button - looks better discuss with ZC.
+
+.start-button {
+  background: rgb(18, 118, 206);
+  width: var(--start-button-size);
+  height: var(--start-button-size);
+  border-radius: 50%;
+  position: absolute;
+  left: var(--start-button-loc-x);
+  top: var(--start-button-loc-y);
+}
+
+/* center the text in the start button 
+.start-button p{
+  width: 100%;
+  margin: 0;
+  position: absolute;
+  top:30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* do not allow users to select text 
+  user-select:none; /* supported by Chrome and Opera 
+   -webkit-user-select: none; /* Safari 
+   -khtml-user-select: none; /* Konqueror HTML 
+   -moz-user-select: none; /* Firefox 
+   -ms-user-select: none; /* Internet Explorer/Edge 
+}*/
+
+
+/***************************************************
+ the information boxes for each gamble
+***************************************************/
+
+/* create the circles that will contain info (i.e., info box) */
+.info-box {
+  width: var(--info-box-size);
+  height: var(--info-box-size);
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* to make the info circles more distinguishable, they will have different colors*/
+.info-box-gambleBlue {
+  background: rgb(0, 221, 255);
+  border: solid var(--info-box-border-width) rgb(4, 148, 170);
+}
+
+.info-box-probBlue {
+  background:  rgb(0, 221, 255);
+  border: solid var(--info-box-border-width) rgb(4, 148, 170);
+}
+
+.info-box-gambleYellow {
+  background: yellow;
+  border: solid var(--info-box-border-width) rgb(185, 185, 6);
+}
+
+.info-box-probYellow {
+  background: yellow;
+  border: solid var(--info-box-border-width) rgb(185, 185, 6);
+}
+
+
+/* center the text in the info box */
+
+.info-box p{
+  width: 100%;
+  margin: 0;
+  font-size: 70px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+/* define the 4 possible locations */
+#loc1{
+  left: calc(var(--loc1-center-x) - var(--info-box-size)/2);
+  top: calc(var(--loc1-center-y) - var(--info-box-size)/2);
+}
+
+#loc2{
+  left: calc(var(--loc2-center-x) - var(--info-box-size)/2);
+  top: calc(var(--loc2-center-y) - var(--info-box-size)/2);
+}
+
+#loc3{
+  left: calc(var(--loc3-center-x) - var(--info-box-size)/2);
+  top: calc(var(--loc3-center-y) - var(--info-box-size)/2);
+}
+
+#loc4{
+  left: calc(var(--loc4-center-x) - var(--info-box-size)/2);
+  top: calc(var(--loc4-center-y) - var(--info-box-size)/2);
+}
+
+
+
+/* when the mouse cursor hovers over an info box,
+hide the front side and show the back side instead.
+Need to do this for all 8 possible locations */
+
+
+
+#loc1-front {
+  display: inline;
+}
+
+#loc1-back {
+  display: none;
+}
+
+#loc1:hover > #loc1-front{
+	display:none;
+}
+
+#loc1:hover > #loc1-back{
+	display: inline;
+}
+
+#loc1:hover {
+	background: white;
+} 
+
+#loc2-front {
+  display: inline;
+}
+
+#loc2-back {
+  display: none;
+}
+
+#loc2:hover > #loc2-front{
+	display: none;
+}
+
+#loc2:hover > #loc2-back{
+	display: inline;
+}
+
+#loc2:hover {
+	background: white;
+}
+
+#loc3-front {
+  display: inline;
+}
+
+#loc3-back {
+  display: none;
+}
+
+#loc3:hover > #loc3-front{
+	display: none;
+}
+
+#loc3:hover > #loc3-back{
+	display: inline;
+}
+
+#loc3:hover {
+	background: white;
+}
+
+#loc4-front {
+  display: inline;
+}
+
+#loc4-back {
+  display: none;
+}
+
+#loc4:hover > #loc4-front{
+	display: none;
+}
+
+#loc4:hover > #loc4-back{
+	display: inline;
+}
+
+#loc4:hover {
+	background: white;
+}
+
+
+
+/***************************************************
+ pie charts for presenting the probability info. Comment: AKB: Add another pie chart here
+***************************************************/
+
+.pie-chart {
+	width: var(--pie-chart-size);
+	height:var(--pie-chart-size);
+	border-radius: 50%;
+  border: solid var(--choice-button-border-width) green;
+  /* center the pie chart in the info box */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+/***************************************************
+ rectangles for presenting the amount of win and loss.
+***************************************************/
+
+.amount_bar {
+  height: 150px;
+  width: 80px;
+  /* center the pie chart in the info box */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+
+/***************************************************
+ choice buttons
+***************************************************/
+#choice-button-left{
+  background-color: rgb(0, 221, 255);
+  width: var(--choice-button-width);
+  height: var(--choice-button-height);
+  border: solid var(--choice-button-border-width) rgb(4, 148, 170);
+  position: absolute;
+  left: var(--choice-button-left-pos-x);
+  top: var(--choice-button-left-pos-y);
+}
+
+#choice-button-right{
+  background-color: yellow;
+  width: var(--choice-button-width);
+  height: var(--choice-button-height);
+  border: solid var(--choice-button-border-width) rgb(185, 185, 6);
+  position: absolute;
+  left: var(--choice-button-right-pos-x);
+  top: var(--choice-button-right-pos-y);
+}
+
+
+/* center the text in the choice buttons */
+#choice-button-left p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-font-size);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+#choice-button-right p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-font-size);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+
+/* change the border color of the choice button when hover on,
+also change the mouse cursor into a pointer */
+#choice-button-left:hover {
+  border: solid var(--choice-button-border-width) black;
+  cursor: pointer;
+}
+
+#choice-button-right:hover {
+  border: solid var(--choice-button-border-width) black;
+  cursor: pointer;
+}
+
+
+/***************************************************
+ text message box
+***************************************************/
+#text-box {
+  width: var(--text-box-width);
+  height: var(--text-box-height);
+  position: absolute;
+  left: var(--text-box-pos-x);
+  top: var(--text-box-pos-y);
+}
+
+/* center the text in the text box */
+#text-box p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-font-size);
+  position: absolute;
+  top: 95%;
+  left: 5%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+
+
+/***************************************************
+ the information boxes during the outcome phase
+***************************************************/
+/* create the circles that will contain info (i.e., info box) */
+#outcome-info-gambleBlue {
+  width: var(--info-box-size);
+  height: var(--info-box-size);
+  border: solid var(--info-box-border-width) lightgray;
+  border-radius: 50%;
+  position: absolute;
+  left: calc(var(--info-gambleBlue-outcome-center-x) - var(--info-box-size)/2);
+  top: calc(var(--info-gambleBlue-outcome-center-y) - var(--info-box-size)/2);
+}
+
+#outcome-info-probBlue { 
+  width: var(--info-box-size);
+  height: var(--info-box-size);
+  border: solid var(--info-box-border-width) rgb(211, 211, 211);
+  border-radius: 50%;
+  position: absolute;
+  left: calc(var(--info-probBlue-outcome-center-x) - var(--info-box-size)/2);
+  top:  calc(var(--info-probBlue-outcome-center-y) - var(--info-box-size)/2);
+  overflow: hidden;
+  transition: 1.5s;
+}
+
+#outcome-info-gambleYellow {
+  width: var(--info-box-size);
+  height: var(--info-box-size);
+  border: solid var(--info-box-border-width) lightgray;
+  border-radius: 50%;
+  position: absolute;
+  left: calc(var(--info-gambleYellow-outcome-center-x) - var(--info-box-size)/2);
+  top: calc(var(--info-gambleYellow-outcome-center-y) - var(--info-box-size)/2);
+}
+
+#outcome-info-probYellow{ 
+  width: var(--info-box-size);
+  height: var(--info-box-size);
+  border: solid var(--info-box-border-width) rgb(211, 211, 211);
+  border-radius: 50%;
+  position: absolute;
+  left: calc(var(--info-probYellow-outcome-center-x) - var(--info-box-size)/2);
+  top:  calc(var(--info-probYellow-outcome-center-y) - var(--info-box-size)/2);
+  overflow: hidden;
+  transition: 1.5s;
+}
+
+/***************************************************
+ Reminder of outcome
+***************************************************/
+#choice-reminder {
+  width: var(--choice-reminder-width);
+  height: var(--choice-reminder-height);
+  position: absolute;
+  left: 0px;
+  top: calc(var(--choice-reminder-center-y) - var(--choice-reminder-height)/2);
+}
+
+/* center the text in the text box */
+#choice-reminder p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--choice-reminder-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: red;
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+/***************************************************
+ showing the results in text above the circles
+***************************************************/
+
+#gambleBlueAmount-text {
+  width: var(--outcome-text-width);
+  height: var(--outcome-text-height);
+  position: absolute;
+  left: calc(var(--gambleBlueAmount-text-center-x) - var(--outcome-text-width)/2);
+  top: calc(var(--gambleBlueAmount-text-center-y) - var(--outcome-text-height)/2);
+}
+
+/* center the text in the text box */
+#gambleBlueAmount-text p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--outcome-text-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color:green;
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+#probBlue-text {
+  width: var(--outcome-text-width);
+  height: var(--outcome-text-height);
+  position: absolute;
+  left: calc(var(--probBlue-text-center-x) - var(--outcome-text-width)/2);
+  top: calc(var(--probBlue-text-center-y) - var(--outcome-text-height)/2);
+}
+
+/* center the text in the text box */
+#probBlue-text p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--outcome-text-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: black;
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+#gambleYellowAmount-text {
+  width: var(--outcome-text-width);
+  height: var(--outcome-text-height);
+  position: absolute;
+  left: calc(var(--gambleYellowAmount-text-center-x) - var(--outcome-text-width)/2);
+  top: calc(var(--gambleYellowAmount-text-center-y) - var(--outcome-text-height)/2);
+}
+
+/* center the text in the text box */
+#gambleYellowAmount-text p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--outcome-text-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: green;
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+#probYellow-text {
+  width: var(--outcome-text-width);
+  height: var(--outcome-text-height);
+  position: absolute;
+  left: calc(var(--probYellow-text-center-x) - var(--outcome-text-width)/2);
+  top: calc(var(--probYellow-text-center-y) - var(--outcome-text-height)/2);
+}
+
+/* center the text in the text box */
+#probYellow-text p{
+  width: 100%;
+  margin: 0;
+  font-size: var(--outcome-text-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: black;
+  text-align: center;
+  /* do not allow users to select text */
+  user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}

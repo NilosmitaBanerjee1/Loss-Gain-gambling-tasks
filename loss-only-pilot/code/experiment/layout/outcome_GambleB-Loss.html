@@ -1,0 +1,76 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Game layout</title>
+  <link rel="stylesheet" href="/Users/akira/Desktop/Pilot-Experiments/RiskyLossMain-main/pilot1/code/experiment/configurations/customLoss.css">
+
+  <script>
+
+  function play_win_sound() {
+
+    let spin = document.getElementById("outcome-info-prob");
+    // let number = Math.ceil(Math.random() * 1000);
+    let number = 180;
+    spin.style.transform = "rotate(" + number + "deg)";
+
+    // play audio
+    document.getElementById("win_sound").play();
+  }
+
+  function play_loss_sound() {
+    // play audio
+    document.getElementById("loss_sound").play();
+  }
+
+  </script>
+
+
+</head>
+
+<body>
+  <div class = "game-interface">
+<!-- No choice reminders needed 
+    <div id = "choice-reminder"><p>You accepted this game.</p></div> 
+
+    <div id = "win-text"><p>+20</p></div>
+
+    <div id = "outcome-info-loss">
+      <div class = "amount_bar" style="background: linear-gradient(to top, #B81D13 , #B81D13 20%, #BFC9CA 20%)"></div>
+    </div>-->
+
+
+    <div id = "loss-text"><p>-20</p></div>
+
+    <div id = "outcome-info-loss">
+      <div class = "amount_bar" style="background: linear-gradient(to top, #f61404 , #f61404 30%, #BFC9CA 20%)"></div>
+    </div>
+
+    <div id = "neutral-text"><p>&#x2193</p></div>
+    <div id = "outcome-info-prob">
+      <div class = "pie-chart" style="background: conic-gradient(#fbfbfb 0% 55%,#f61404 55% 100%);"></div>
+    </div>
+<!-- 
+    <div id = "neutral-text"><p>&#x2193</p></div>
+    <div id = "outcome-info-prob">
+      <div class = "pie-chart" style="background: conic-gradient(#008450 0% 25%, #B81D13 25% 50%, #008450 50% 75%, #B81D13 75% 100%);"></div>
+    </div>
+
+    <div id = "loss-text"><p>-30</p></div>
+    <div id = "outcome-info-win">
+      <div class = "amount_bar" style="background: linear-gradient(to top, #008450 , #008450 80%, #BFC9CA 80%)"></div>
+      <img src onerror="play_win_round();">
+      <audio id="win_sound" src="cash.wav"></audio>
+    </div>-->
+
+  </div>
+
+
+
+
+
+</body>
+
+</html>

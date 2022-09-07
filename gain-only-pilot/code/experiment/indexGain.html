@@ -1,0 +1,939 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Decision-Making Game</title>
+  <script src="js/jspsych-7.2.1/dist/jspsych.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-browser-check.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-preload.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-fullscreen.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-survey-text.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-survey-multi-choice.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-instructions.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-html-keyboard-response.js"></script>
+  <script src="js/jspsych-7.2.1/dist/plugin-html-mouse-no-response.js"></script>  <!-- custom plugin for mouse tracking -->
+  <script src="js/jspsych-7.2.1/dist/plugin-html-mouse-response.js"></script>  <!-- custom plugin for mouse tracking -->
+  <script src="js/jquery-1.7.1.min.js"></script> <!-- the jquery library is used to communicate with the server (to store the data) through "AJAX" and PHP -->
+  <link href="js/jspsych-7.2.1/dist/jspsych.css" rel="stylesheet" type="text/css"></link>
+  <link href="configurations/customGain.css" rel="stylesheet" type="text/css"></link> <!-- custom css code -->
+</head>
+<body>
+</body>
+<script>
+
+
+/********************************************************
+      Initialize variables
+********************************************************/
+
+/* initialize jsPsych */
+var jsPsych = initJsPsych();
+
+/* global variables to keep track of things */
+
+// is the experiment running from a server or not? (this determines if data is saved on server or offline)
+if (document.location.host) { // returns your host or null
+  var online = true;
+} else {
+  var online = false;
+};
+// Note for AkB: Gamble A = Blue Gamble; Gamble B = Yellow Gamble
+
+var timeline = []; // create an empty timeline variable
+var subjID; // subjectID
+var block_type; // block type, practice or experimental
+var block_number = 1; // block number
+var trial_number; // trial number in each block
+var Ntrial; // total number of trials
+
+// the position of the circle containing win and loss amount, can be 1-8.
+var gambleBlue_location, gambleYellow_location;
+var probBlue_location, probYellow_location;
+
+var gambleBlue_amount, gambleYellow_amount; // amount of points for each gamble
+var probBlue_amount, probYellow_amount; //prob amount for each gamble
+var choice; // choice on each game, Blue or Yellow circle.
+var outcome; // outcome of each trial, higher loss (high loss amount with high p[loss]) or lower loss (low loss amount with low p[loss])
+var outcome_amount; // the exact amount of points lost
+
+var startRT; // how quickly participants start a trial, in milliseconds
+// var sampleRT; // how quickly participants inspect the information, in milliseconds -- NOTE: Removed this variable
+
+// how quickly participants make a choice, in milliseconds.
+// Note that this is from when the 'Accept' and 'Reject' buttons appear till when participants make a choice.
+var choiceRT;
+
+var all_outcomes =[]; // an empty array to save the outcomes of all trials
+
+// variables to save for the mouse tracking data
+var phase; // the phase in a trial, 'sample' (before the choice buttons appear) or 'select' (after the choice buttons appear).
+var mouse_rt; // rt since the beginning of tracking, in milliseconds.
+var x, y; // the x, y coordinates of the mouse cursor
+var element; // the html element that the mouse cursor currently hovers over
+var info_type; // the type of information contained in the hovered element
+
+/********************************************************
+  Function to save data to a csv file
+********************************************************/
+
+// function that appends data to an existing file (or creates the file if it does not exist)
+function appendData(filename, filedata) {
+
+  $.ajax({ // make sure jquery-1.7.1.min.js is loaded in the html header for this to work
+    type: 'post',
+    cache: false,
+    url: 'php/save_data_append.php', // IMPORTANT: change the php script to link to the directory of your server where you want to store the data!
+    data: {
+      filename: filename,
+      filedata: filedata
+    },
+  });
+};
+
+// function to generate a random integer within a certain range
+function randomIntFromInterval(min, max) { // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+/********************************************************
+  Create trials to be used in the experiment
+********************************************************/
+
+// will add more trials later
+// 3 as an arbitrary number can change this later
+
+/* Create trials 
+
+var gamble_combinations = [
+  {gambleA_prob: 0.6, gambleBlue_amount: -1, gambleB_prob: 0.4, gambleB_amount: -4},
+  {gambleA_prob: 0.7, gambleBlue_amount: -1, gambleB_prob: 0.3, gambleB_amount: -5},
+  {gambleA_prob: 0.7, gambleBlue_amount: -1, gambleB_prob: 0.3, gambleB_amount: -5},
+  {gambleA_prob: 0.7, gambleBlue_amount: -1, gambleB_prob: 0.3, gambleB_amount: -5}
+]
+var trials = [];
+
+for (var j = 0; j < gamble_combinations; j++) {
+  var gambleA_amount = gamble_combinations[j].gambleA_amount;
+  var probA_amount = gamble_combinations [j].probA_amount;
+  var gambleB_amount = gamble_combinations [j].gambleB_amount;
+  var probB_amount = gamble_combinations [j].probB_amount;
+  trials.push(gamble_combinations [j]);
+}  */
+
+// Should we actually lable the phases for the trial type? -- Change the values: Set 1 and 2 are the values from Limbrick-Oldfield et al., (2020)
+
+var gamble_combinations = [
+  {probBlue_amount: 60, gambleBlue_amount: 10, probYellow_amount: 40, gambleYellow_amount: 40}, // Experimental Trials n = 25
+  {probBlue_amount: 70, gambleBlue_amount: 10, probYellow_amount: 30, gambleYellow_amount: 50},
+  {probBlue_amount: 60, gambleBlue_amount: 20, probYellow_amount: 40, gambleYellow_amount: 50},
+  {probBlue_amount: 70, gambleBlue_amount: 10, probYellow_amount: 20, gambleYellow_amount: 30},
+  {probBlue_amount: 60, gambleBlue_amount: 30, probYellow_amount: 40, gambleYellow_amount: 50}, // set 1 n = 5
+  {probBlue_amount: 60, gambleBlue_amount: 40, probYellow_amount: 40, gambleYellow_amount: 50},
+  {probBlue_amount: 70, gambleBlue_amount: 20, probYellow_amount: 30, gambleYellow_amount: 30},
+  {probBlue_amount: 70, gambleBlue_amount: 30, probYellow_amount: 30, gambleYellow_amount: 40},
+  {probBlue_amount: 80, gambleBlue_amount: 10, probYellow_amount: 20, gambleYellow_amount: 20},
+  {probBlue_amount: 80, gambleBlue_amount: 20, probYellow_amount: 20, gambleYellow_amount: 30}, // set 2 n = 5 (n = 10; gamble-combinations from values from Limbrick-Oldfield et al., (2020))
+  {probBlue_amount: 60, gambleBlue_amount: 10, probYellow_amount: 30, gambleYellow_amount: 20},
+  {probBlue_amount: 10, gambleBlue_amount: 20, probYellow_amount: 20, gambleYellow_amount: 50},
+  {probBlue_amount: 40, gambleBlue_amount: 50, probYellow_amount: 60, gambleYellow_amount: 70},
+  {probBlue_amount: 20, gambleBlue_amount: 40, probYellow_amount: 30, gambleYellow_amount: 70},
+  {probBlue_amount: 50, gambleBlue_amount: 60, probYellow_amount: 20, gambleYellow_amount: 50}, // set 3 n = 5
+  {probBlue_amount: 30, gambleBlue_amount: 40, probYellow_amount: 10, gambleYellow_amount: 90},
+  {probBlue_amount: 40, gambleBlue_amount: 50, probYellow_amount: 10, gambleYellow_amount: 60},
+  {probBlue_amount: 70, gambleBlue_amount: 45, probYellow_amount: 20, gambleYellow_amount: 50},
+  {probBlue_amount: 30, gambleBlue_amount: 80, probYellow_amount: 20, gambleYellow_amount: 70},
+  {probBlue_amount: 20, gambleBlue_amount: 40, probYellow_amount: 50, gambleYellow_amount: 50}, // set 4 n = 5
+  {probBlue_amount: 60, gambleBlue_amount: 10, probYellow_amount: 30, gambleYellow_amount: 20}, 
+  {probBlue_amount: 20, gambleBlue_amount: 20, probYellow_amount: 40, gambleYellow_amount: 50},
+  {probBlue_amount: 60, gambleBlue_amount: 40, probYellow_amount: 10, gambleYellow_amount: 30},
+  {probBlue_amount: 30, gambleBlue_amount: 40, probYellow_amount: 20, gambleYellow_amount: 50},
+  {probBlue_amount: 20, gambleBlue_amount: 90, probYellow_amount: 60, gambleYellow_amount: 30}, // set 5 n = 5
+  {probBlue_amount: 60, gambleBlue_amount: 10, probYellow_amount: 30, gambleYellow_amount: 20}, // Catch Trials n = 5
+  {probBlue_amount: 10, gambleBlue_amount: 20, probYellow_amount: 20, gambleYellow_amount: 50},
+  {probBlue_amount: 60, gambleBlue_amount: 40, probYellow_amount: 10, gambleYellow_amount: 30},
+  {probBlue_amount: 20, gambleBlue_amount: 60, probYellow_amount: 30, gambleYellow_amount: 70},
+  {probBlue_amount: 70, gambleBlue_amount: 20, probYellow_amount: 30, gambleYellow_amount: 30},
+]
+
+/* create repeated trial combinitions */
+var trials = jsPsych.randomization.repeat(gamble_combinations, 5); // each combinition is repeated 5 times
+
+
+// add the location for each trial for each gamble
+var locations = {
+  location: [1, 2, 3, 4]
+}
+//randomize locations
+var all_locations_1 = jsPsych.randomization.factorial(locations, 20);
+var all_locations_2 = jsPsych.randomization.factorial(locations, 20);
+
+var all_locations = all_locations_1.concat(all_locations_2)
+
+//var all_locations = all_locations_1.concat(all_locations_2);
+
+// locations .
+for (var i = 0; i < trials.length; i++) {
+
+  trials[i].trial_number = i + 1;
+  trials[i].gambleBlue_location = all_locations[i].location;
+  trials[i].probBlue_location = (all_locations [i].location + 1) % 4;
+  trials[i].probYellow_location = (all_locations [i].location + 2) % 4;
+  trials[i].gambleYellow_location = all_locations[i].location - 1;
+
+  if (trials[i].probBlue_location === 0) {
+    trials[i].probBlue_location = 4;
+  }
+  if (trials[i].probYellow_location === 0) {
+    trials[i].probYellow_location = 4;
+  }
+  if (trials[i].gambleYellow_location === 0){
+    trials[i].gambleYellow_location = 4
+  }
+
+
+}
+
+// randomly select 6 trials to be used in practice
+var tmp_1 = jsPsych.randomization.shuffle(trials);
+
+// make a deep copy of the array
+var tmp = tmp_1.map(a => {return {...a}});
+
+practice_trials = [];
+
+for (var i = 0; i < 6; i++) {
+  var tmp_trial = tmp[i];
+  tmp_trial.trial_number = i + 1;
+  practice_trials.push(tmp_trial);
+}
+
+/***************************************************************/
+/*                      Preload files                          */
+/***************************************************************/
+/* all images and audios used in the experiment */
+
+var instruct_images = [ 'Instructions/Slide1.png', 'Instructions/Slide2.png', 
+                        'Instructions/Slide3.png', 'Instructions/Slide4.png',
+                        'Instructions/Slide5.png', 'Instructions/Slide6.png', 
+                        'Instructions/Slide7.png', 'Instructions/Slide8.png', 
+                        'Instructions/Slide9.png'];
+
+var all_audios = ['cash.wav', 'buzz.wav'];
+
+var preload = {
+  type: jsPsychPreload,
+  images: instruct_images,
+  audio:all_audios
+}
+
+/***************************************************************/
+/*           Informed Consent & Task Instructions              */
+/***************************************************************/
+
+var consent = {
+  type: jsPsychInstructions,
+  pages: ['<img src="' + instruct_images[0] + '"></img>'],
+  show_clickable_nav: true,
+  button_label_next: "I agree",
+  allow_backward: false
+};
+
+var instruction_practice = {
+  type: jsPsychInstructions,
+  pages: ['<img src="' + instruct_images[1] + '"></img>',
+          '<img src="' + instruct_images[2] + '"></img>',
+          '<img src="' + instruct_images[3] + '"></img>',
+          '<img src="' + instruct_images[4] + '"></img>',
+          '<img src="' + instruct_images[5] + '"></img>',
+          '<img src="' + instruct_images[6] + '"></img>',
+          '<img src="' + instruct_images[7] + '"></img>'],
+  show_clickable_nav: true,
+  allow_backward: true,
+  on_start: function(){
+    block_type = "practice";
+    Ntrial = practice_trials.length;
+  }
+};
+
+var instruction_exp = {
+  type: jsPsychInstructions,
+  pages: ['<img src="' + instruct_images[8] + '"></img>'],
+  show_clickable_nav: true,
+  on_start: function(){
+    block_type = "exp";
+    Ntrial = trials.length;
+  }
+};
+
+/***************************************************************/
+/*                        Browser Check                        */
+/***************************************************************/
+
+var browser_size = {
+  type: jsPsychBrowserCheck,
+  minimum_width: 1000,
+  minimum_height: 600
+};
+
+var browser_check = {
+  type: jsPsychBrowserCheck,
+  inclusion_function: (data) => {
+    return (data.browser == 'chrome' || data.browser == 'firefox') && data.mobile === false
+  },
+  exclusion_message: (data) => {
+    if(data.mobile){
+      return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
+    } else if((data.browser == 'chrome' || data.browser == 'firefox') === false){
+      return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>';
+    }
+  },
+  on_finish: function(data){
+
+    // get the start time
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = date + ' ' + time;
+
+    // add the start time and some browser properties to the data
+    jsPsych.data.addProperties({exp_start_time: dateTime,
+                                browser: data.browser,
+                                browser_version: data.browser_version,
+                                width: data.width,
+                                height: data.height,
+                                vsync_rate: data.vsync_rate,
+                                os: data.os});
+  }
+};
+
+/***************************************************************/
+/*                         Adjust volume                       */
+/***************************************************************/
+var adjust_volume = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: '<p>This experiment contains some sound effects. Turn on your speaker and adjust the volume of your speaker to a comfortable level. <br><br>You can test the sound below. Press J to continue once you are ready.</p><audio controls src="cash.wav"></audio>',
+  choices: ['j']
+}
+
+/***************************************************************/
+/*                    Demographic Information                  */
+/***************************************************************/
+
+// subject ID
+var enter_subjectID = {
+  type: jsPsychSurveyText,
+  questions: [
+    {prompt: "Enter your prolific ID:", required: true}],
+  on_finish: function(data) {
+    // get subject ID and add it to the data object
+    subjID = data.response.Q0;
+    jsPsych.data.addProperties({subjID:subjID,});
+
+    // write headers
+    var data_row = "subjectID, age, gender, nationality, exp_start_time, browser, browser_version, width, height, vsync_rate, os\n";
+    appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
+
+    var data_row = "subjectID, block_type, block_number, trial_number, win_location, loss_location, " +
+                   "gambleBlue_amount, probBlue_amount, gambleYellow_amount, probYellow_amount, startRT, choiceRT, choice, outcome, outcome_amount\n";
+    appendData('RiskyMouse_main_'+ subjID +'.csv', data_row); //removed variable - sampleRT
+
+    var data_row = "subjectID, block_type, block_number, trial_number, phase, mouse_rt, x, y, element, info_type\n";
+    appendData('RiskyMouse_tracking_'+ subjID +'.csv', data_row);
+
+    var data_row = 'subjectID, total, bonus\n';
+    appendData('RiskyMouse_Pay_' + subjID +'.csv', data_row);
+
+  }
+};
+
+// get age and nationality
+var enter_age_nationality = {
+  type: jsPsychSurveyText,
+  questions: [
+    {prompt: "Enter your age", required: true},
+    {prompt: "Enter your nationality", required: true}],
+  on_finish: function(data) {
+    // get age and nationality and add it to the data object
+    age = data.response.Q0;
+    nationality = data.response.Q1;
+    jsPsych.data.addProperties({age:age, nationality:nationality});
+  }
+};
+
+// get participant's gender
+var enter_gender = {
+  type: jsPsychSurveyMultiChoice,
+  questions: [{
+    prompt: "Enter your gender",
+    options: ["male", "female", "non-binary", "I don't want to say"],
+    required: true
+  }],
+  on_finish: function(data) {
+    // get gender and add it to the data object
+    gender = data.response.Q0;
+    jsPsych.data.addProperties({gender:gender});
+
+    // register data
+    var data_row =
+        data.subjID + ',' + data.age + ',' +  data.gender + ',' +
+        data.nationality + ',' +  data.exp_start_time + ',' +
+        data.browser + ',' +  data.browser_version + ',' +  data.width + ',' +  data.height + ',' +
+        data.vsync_rate + ',' +  data.os + '\n';
+
+    appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
+
+  }
+};
+
+// full screen mode
+var enter_fullscreen = {
+  type: jsPsychFullscreen,
+  fullscreen_mode: true
+};
+
+
+/********************************************************
+  Start a trial
+********************************************************/
+
+// function to generate the html string during the start phase
+var create_html_start = function(){
+
+  var html_string = '<div class = "game-interface">';
+
+  // add the start message
+  html_string = html_string +
+    '<div id = "start-button"><p> Start' + trial_number + '/' + Ntrial +'</p></div>';
+
+  // add the closing div tag
+  html_string = html_string +
+    '</div>';
+
+  return html_string;
+
+}
+
+var risk_start = {
+  type: jsPsychHtmlMouseResponse,
+  stimulus: 'placeholder',
+  choices: ['start-button'],
+  tracking_elements: [],
+  on_start: function(risk_start){
+
+    // get the parameters of the current trial
+    trial_number = jsPsych.timelineVariable('trial_number');
+
+    gambleBlue_amount = jsPsych.timelineVariable('gambleBlue_amount');
+    probBlue_amount = jsPsych.timelineVariable('probBlue_amount');
+    gambleYellow_amount = jsPsych.timelineVariable('gambleYellow_amount');
+    probYellow_amount = jsPsych.timelineVariable('probYellow_amount');
+
+
+    gambleBlue_location = jsPsych.timelineVariable('gambleBlue_location');
+    probBlue_location = jsPsych.timelineVariable('probBlue_location');
+    gambleYellow_location = jsPsych.timelineVariable('gambleYellow_location');
+    probYellow_location = jsPsych.timelineVariable('probYellow_location');
+
+    // create the html string to be presented
+    risk_start.stimulus = create_html_start();
+
+  },
+  on_finish: function(data){
+    startRT = data.rt;
+  }
+}
+
+/********************************************************
+  Function to register the mouse tracking data
+********************************************************/
+// function to save the mouse tracking data to a csv file
+// the input variable mouse_data is an array that contains tracking data
+var save_mouse_data = function(mouse_data){
+  // create a dictionary to show the information type shown in each location
+  var loc_info_dict = {};
+
+  loc_info_dict["loc" + gambleBlue_location] = 'Amount Blue Gamble';
+  loc_info_dict["loc" + probBlue_location] = 'Probability Blue Gamble';
+  loc_info_dict["loc" + gambleYellow_location] = 'Amount Yellow Gamble';
+  loc_info_dict["loc" + probYellow_location] = 'Probability Yellow Gamble';
+  loc_info_dict['choice-button-left'] = 'Gamble Blue';
+  loc_info_dict['choice-button-right'] = 'Gamble Yellow';
+  loc_info_dict["none"] = "none";
+
+  // create an empty string to hold all tracking data later on
+  var mouse_data_string = "";
+
+  // go through the elments in the array one by one,
+  // and add the information to the string created above
+  for (var i = 0; i < mouse_data.length; i++) {
+    var one_data_row = mouse_data[i];
+
+    mouse_rt = one_data_row[0];
+    x = one_data_row[1];
+    y = one_data_row[2];
+    element = one_data_row[3];
+    info_type = loc_info_dict[element];
+
+    var one_row_string =
+      subjID + ',' + block_type + ',' + block_number + ',' +
+      trial_number + ',' + phase + ',' +
+      mouse_rt + ',' + x + ',' + y + ',' + element + ',' +
+      info_type + '\n';
+
+    mouse_data_string = mouse_data_string +  one_row_string;
+
+  }
+
+  // save the data to a csv file
+  appendData('RiskyMouse_tracking_'+ subjID +'.csv', mouse_data_string);
+
+}
+
+/********************************************************
+  Function to register the main data
+********************************************************/
+// function to save the main data to a csv file
+var save_main_data = function(){
+  // create a string to hold all main data
+  var main_data_string =
+    subjID + ',' + block_type + ',' + block_number + ',' +
+    trial_number + ',' + gambleBlue_location + ',' + probBlue_location + ',' + gambleYellow_location + ',' +
+    probYellow_location + ',' + gambleBlue_amount + ',' + probBlue_amount + ',' + gambleYellow_amount + ',' + probYellow_amount
+    startRT + ',' + choiceRT + ',' +
+    choice + ',' + outcome + ',' + outcome_amount + '\n'; //removed variable - sampleRT
+
+  // save the data to a csv file
+  appendData('RiskyMouse_main_'+ subjID +'.csv', main_data_string);
+
+}
+
+/********************************************************
+  Sample information
+********************************************************/
+
+// function to generate the html string during the sampling phase
+var create_html_sampling = function(){
+
+  var html_string = '<div class = "game-interface">';
+
+  // add the circle showing the gamble Blue amount info
+  html_string = html_string +
+    '<div id = "loc' + gambleBlue_location + '" class = "info-box info-box-gambleBlue">'+
+    '<p id = "loc' + gambleBlue_location + '-front">€</p>'+
+    '<div id = "loc' + gambleBlue_location +'-back" class = "amount_bar" ' +
+    'style="background: linear-gradient(to top, green , green ' + gambleBlue_amount + '%, #BFC9CA ' 
+                                        + gambleBlue_amount +'%)"></div>'+
+    '</div>';
+
+  // add the circle showing the gamble Blue prob info
+  html_string = html_string +
+    '<div id = "loc' + probBlue_location + '" class = "info-box info-box-probBlue">'+
+    '<p id = "loc' + probBlue_location + '-front">%</p>'+
+    '<div id = "loc' + probBlue_location +'-back" class = "pie-chart" ' + 
+    'style="background: conic-gradient(white 0%' + probBlue_amount +'%, green '
+                                             + probBlue_amount +'% 100%)"></div>'+
+    '</div>';
+  
+  // add the circle showing the gamble Yellow amount info
+  html_string = html_string +
+    '<div id = "loc' + gambleYellow_location + '" class = "info-box info-box-gambleYellow">'+
+    '<p id = "loc' + gambleYellow_location + '-front">€</p>'+
+    '<div id = "loc' + gambleYellow_location +'-back" class = "amount_bar" ' +
+    'style="background: linear-gradient(to top, green , green ' + gambleYellow_amount + '%, #BFC9CA ' 
+                                                         + gambleYellow_amount +'%)"></div>'+
+    '</div>';
+
+  // add the circle showing the gamble Yellow prob info
+  html_string = html_string +
+    '<div id = "loc' + probYellow_location + '" class = "info-box info-box-probYellow">'+
+    '<p id = "loc' + probYellow_location + '-front">%</p>'+
+    '<div id = "loc' + probYellow_location +'-back" class = "pie-chart" ' +
+    'style="background: conic-gradient(white 0% ' + probYellow_amount +'%, green ' 
+                                               + probYellow_amount +'% 100%)"></div>'+
+    '</div>';
+    // add choice buttons
+  html_string = html_string +
+    '<div id = "choice-button-left"></div>' +
+    '<div id = "choice-button-right"></div>' +
+    '</div>';
+
+  return html_string;
+
+}
+
+var risk_sampling_decide = {
+  type: jsPsychHtmlMouseResponse,
+  stimulus: 'placeholder',
+  tracking_elements: [],
+  choices:['choice-button-left','choice-button-right'],
+  on_start: function(risk_sampling_decide){
+    risk_sampling_decide.stimulus = create_html_sampling();
+    risk_sampling_decide.tracking_elements = ['loc'+ gambleBlue_location, 'loc'+ probBlue_location, 
+                                              'loc' + gambleYellow_location, 'loc' + probYellow_location,
+                                              'choice-button-left', 'choice-button-right'];
+  },
+  on_finish: function(data){
+    //sample = data.rt;
+    
+    choiceRT = data.rt;
+
+    // determine which option is selected
+    if (data.selected_choice === "choice-button-left") {
+      choice = "Gamble Blue";
+    } else {
+      choice = "Gamble Yellow";
+    }
+
+    // save the mouse tracking data
+     phase = "sampling and decision";
+     save_mouse_data(data.mouse_tracking);
+    }
+  }
+
+/********************************************************
+            Decision Outcome - Gamble Blue
+********************************************************/
+// function to generate the html string when participants accept the gamble
+var create_html_outcome_gambleBlue = function(show_result = false){
+
+  var html_string = '<div class = "game-interface">';
+
+  // outcome reminder 
+  html_string = html_string +
+    '<div id = "choice-reminder"></div>';
+
+  // add the circle showing the gamble Blue amount
+  html_string = html_string +
+    '<div id = "outcome-info-gambleBlue">' +
+    '<div class = "amount_bar" style="background: linear-gradient(to top, green , green ' 
+                      + gambleBlue_amount + '%, #BFC9CA ' + gambleBlue_amount + '%)"></div>' +
+    '</div>';
+
+  // add the circle showing the probability info of gamble Blue
+  html_string = html_string +
+    '<div id = "outcome-info-probBlue">' +
+    '<div class = "pie-chart" style="background: conic-gradient(white 0% ' + probBlue_amount +'%, green ' 
+                                        + probBlue_amount +'% 100%);"></div>' +
+    '</div>';
+
+  // add an arrow above the pie chart
+  html_string = html_string +
+    '<div id = "probBlue-text"><p>&#x2193</p></div>';
+
+  
+  html_string = html_string +
+     '<div id = "gambleBlueAmount-text"><p><br></p></div>' +
+     '<audio id="win_sound" src="cash.wav"></audio>';
+    
+  html_string = html_string +
+      '<div id = "gambleBlueAmount-text"><p><br></p></div>' +
+      '<img src onerror= "gamble_outcomeBlue();">' +
+      '<audio id="loss_sound" src="buzz.wav"></audio>'
+
+  // add the closing div tag
+    html_string = html_string + '</div>';
+     
+    return html_string;
+
+}
+
+// functions to show outcomes
+function gamble_outcomeBlue() {
+
+  // spin the wheel
+  var wheel = document.getElementById("outcome-info-probBlue");
+  // show outcome text and play audio after 1500 milliseconds
+  var myVar = setTimeout(show_outcome, 2000); //increased 500 ms
+  
+  
+  // DEBUGGING NEEDED - Discuss with ZC!
+  var spin_degrees = 180 * randomIntFromInterval(6,7) + randomIntFromInterval (5, 85);
+  if (spin_degrees >= 1190 && spin_degrees <= 1340) { // this part not working
+      outcome = 'no win'
+    } else {
+      outcome = 'win';
+  }
+  wheel.style.transform = "rotate(" + spin_degrees + "deg)";
+
+  function show_outcome() {
+    if (outcome === 'win') {
+        document.getElementById("gambleBlueAmount-text").innerHTML = '<p>'+  gambleBlue_amount + '</p>';
+        document.getElementById("win_sound").play();
+     } else if (outcome === 'no win') { 
+       document.getElementById("choice-reminder").innerHTML = '<p> No Wins incurred!</p>';
+       document.getElementById("loss_sound").play();
+    }
+  }
+}
+
+var risk_outcomeBlue = {
+  type: jsPsychHtmlMouseResponse,
+  stimulus: 'placeholder',
+  choices: [],
+  tracking_elements: [],
+  trial_duration: 3000,
+  on_start: function(risk_outcomeBlue){
+    risk_outcomeBlue.stimulus = create_html_outcome_gambleBlue();
+  }
+  //,
+   //on_finish: function(data){
+   //outcome = "Gamble Blue";
+   //outcome_amount = gambleBlue_amount;
+  //}
+
+}   
+  
+  var if_node_GambleBlue = {
+    timeline: [risk_outcomeBlue],
+    conditional_function: function(){
+        if(choice === "Gamble Blue"){
+            return true;
+        } else {
+            return false;
+        }
+    
+    }
+}
+
+/********************************************************
+            Decision Outcome - Gamble Yellow
+********************************************************/
+// function to generate the html string when participants accept the gamble Yellow
+var create_html_outcome_gambleYellow = function(show_result = false){
+
+var html_string = '<div class = "game-interface">';
+
+// outcome reminder 
+  html_string = html_string +
+  '<div id = "choice-reminder"></div>';  
+
+// add the circle showing the gamble Yellow amount
+  html_string = html_string +
+  '<div id = "outcome-info-gambleYellow">' +
+  '<div class = "amount_bar" style="background: linear-gradient(to top, green , green ' 
+                            + gambleYellow_amount + '%, #BFC9CA ' + gambleYellow_amount + '%)"></div>' +
+  '</div>';
+
+// add the circle showing the probability info of gamble Yellow
+html_string = html_string +
+  '<div id = "outcome-info-probYellow">' +
+  '<div class = "pie-chart" style="background: conic-gradient(white 0% ' + probYellow_amount +'%, green ' 
+                                      + probYellow_amount +'% 100%);"></div>' +
+  '</div>';
+
+
+// add an arrow above the pie chart
+html_string = html_string +
+  '<div id = "probYellow-text"><p>&#x2193</p></div>';
+
+html_string = html_string +
+    '<div id = "gambleYellowAmount-text"><p><br></p></div>' +
+    '<audio id="win_sound" src="cash.wav"></audio>';
+
+html_string = html_string +
+  '<div id = "gambleYellowAmount-text"><p><br></p></div>' +
+  '<img src onerror="gamble_outcomeYellow();">' +
+  '<audio id="loss_sound" src="buzz.wav"></audio>';
+
+
+// add the closing div tag
+  html_string = html_string + '</div>';
+   
+  return html_string;
+
+}
+
+// functions to show outcomes
+// functions to show outcomes
+function gamble_outcomeYellow() {
+
+// spin the wheel
+var wheel = document.getElementById("outcome-info-probYellow");
+// show outcome text and play audio after 1500 milliseconds
+var myVar = setTimeout(show_outcome, 2000); //increased 500 ms
+
+
+// DEBUGGING NEEDED - Discuss with ZC!
+var spin_degrees = 180 * randomIntFromInterval(6,7) + randomIntFromInterval (5, 85);
+  if (spin_degrees >= 1190 && spin_degrees <= 1340) { // this part not working
+      outcome = 'no win'
+    } else {
+      outcome = 'win';
+  }
+  wheel.style.transform = "rotate(" + spin_degrees + "deg)";
+
+  function show_outcome() {
+    if (outcome === 'win') {
+        document.getElementById("gambleYellowAmount-text").innerHTML = '<p>'+  gambleYellow_amount + '</p>';
+        document.getElementById("win_sound").play();
+     } else if (outcome === 'no win') { 
+       document.getElementById("choice-reminder").innerHTML = '<p> No Wins incurred!</p>';
+       document.getElementById("loss_sound").play();
+    }
+  }
+}
+
+ var risk_outcomeYellow = {
+  type: jsPsychHtmlMouseResponse,
+  stimulus: 'placeholder',
+  choices: [],
+  tracking_elements: [],
+  trial_duration: 3000,
+  on_start: function(risk_outcomeYellow){
+  risk_outcomeYellow.stimulus = create_html_outcome_gambleYellow();
+  }//,
+  //on_finish: function(data){
+  // outcome = "Gamble Yellow";
+   //outcome_amount = gambleYellow_amount;
+ //}
+}
+
+
+var if_node_GambleYellow = {
+  timeline: [risk_outcomeYellow],
+  conditional_function: function(){
+      if(choice === "Gamble Yellow"){
+          return true;
+      } else {
+          return false;
+      }
+  }
+}
+
+
+/********************************************************
+  Register the data from one trial
+********************************************************/
+
+// show a blank screen for 500 milliseconds,
+// and register the data from the current trial.
+var risk_data = {
+  type: jsPsychHtmlMouseResponse,
+  stimulus: '<p></p>',
+  choices: [],
+  tracking_elements: [],
+  trial_duration: 500,
+  on_finish: function(){
+    // register the data from one trial
+    save_main_data();
+
+    // save the outcomes from the experimental block
+    if (block_type === "exp") {
+      all_outcomes.push({trial_number:trial_number, outcome_amount:outcome_amount});
+    }
+  }
+}
+
+/********************************************************
+  Debriefing
+********************************************************/
+
+var debrief = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: 'none',
+  choices: 'No_KEYS',
+  on_start: function(debrief){
+
+    var message =
+    "<p>This is the end of this experiment. Thank you for your participation!</p>" +
+    "<p>In this experiment, we are interested in how wins and losses may influence how people make choices afterwards.</p>" +
+    "<p>The program has randomly picked 10 trials:</p><br>";
+
+    // randomly pick 10 trials
+    all_outcomes = jsPsych.randomization.shuffle(all_outcomes);
+
+    var amount_sum = 0;
+
+    for (var i = 0; i < 10; i++) {
+      var tmp_trial = all_outcomes[i].trial_number;
+      var tmp_amount = all_outcomes[i].outcome_amount;
+
+      message = message +
+      '<p>In Trial ' + tmp_trial +', you got ' + tmp_amount + ' cents.</p>';
+
+      amount_sum = amount_sum + tmp_amount;
+    }
+
+    // show the total amount
+    message = message +
+    '<p>In total, you got ' + amount_sum + ' cents.</p>';
+
+    // determine how much bonus participants will get
+    if (amount_sum <= 0) {
+      var bonus = 0;
+      message = message +
+        '<p> You will therefore not receive any extra bonus.</p>';
+
+    } else if (amount_sum < 100) {
+      var bonus = amount_sum / 100;
+      message = message +
+        '<p> You will therefore receive a bonus of ' + bonus + ' pound.</p>';
+
+    } else {
+      var bonus = 1;
+      message = message +
+        '<p> You will therefore receive the maximum bonus of 1 Euro.</p>';
+    }
+
+    // save the data as csv file
+    var data_row = subjID + ',' + amount_sum + ',' + bonus + '\n';
+    appendData('RiskyMouse_Pay_' + subjID +'.csv', data_row);
+
+    message = message +
+    "<p>We really appreciate your participation and contribution to this research. If you have any questions, you can contact the researcher at zhang.chen@ugent.be.</p><br><br>"+
+    "<p><a href='https://app.prolific.co/submissions/complete?cc=CSS04LEE'>Click here to complete the experiment and return to Prolific.</a></p>";
+
+    debrief.stimulus = message;
+
+  }
+};
+
+/********************************************************
+  Put all elements together
+********************************************************/
+
+// browser check and preload images
+timeline.push(browser_size);
+timeline.push(browser_check);
+timeline.push(preload);
+
+timeline.push(consent);
+
+timeline.push(adjust_volume);
+
+// demographic information
+timeline.push(enter_subjectID);
+timeline.push(enter_age_nationality);
+timeline.push(enter_gender);
+
+// fullscreen mode
+timeline.push(enter_fullscreen);
+
+var practice = {
+  timeline: [risk_start, risk_sampling_decide, if_node_GambleBlue, if_node_GambleYellow, risk_data],
+  timeline_variables: practice_trials,
+  randomize_order: false
+};
+
+timeline.push(instruction_practice);
+timeline.push(practice);
+
+var exp = {
+  timeline: [risk_start, risk_sampling_decide, if_node_GambleBlue, if_node_GambleYellow, risk_data],
+  timeline_variables: trials,
+  randomize_order: false
+};
+
+timeline.push(instruction_exp);
+timeline.push(exp);
+
+timeline.push(debrief);
+
+/********************************************************
+Run the experiment
+********************************************************/
+
+jsPsych.run(timeline);
+
+</script>
+</html>

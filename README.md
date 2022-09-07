@@ -1,2 +1,1 @@
-# Loss-only_Variant
-Contains the task code for the Loss-only variant -- PhD Project: Akira Banerjee
+Gain-only and loss-only versions of risk-taking tasks with mouse tracking

@@ -45,7 +45,7 @@ var block_number = 1; // block number
 var trial_type; // trial type, experimental or catch.
 var trial_number; // trial number in each block.
 var Ntrial; // total number of trials in each block.
-var sample;
+
 // the locations of the circles containing different pieces of information
 // coult be 'left-top', 'left-bottom', 'right-top', or 'right-bottom'.
 var A_amount_loc, A_prob_loc, B_amount_loc, B_prob_loc;
@@ -136,17 +136,100 @@ var gamble_combinations = [
   {A_prob: 70, A_amount: 20, B_prob: 30, B_amount: 30},
 ]
 */
+//combinations generated in R Code
+var gamble_combinations_exp = [
+  {A_prob:60, A_amount:20, B_prob:40, B_amount:80},
+  {A_prob:70,	A_amount:20, B_prob:50, B_amount:60},
+  {A_prob:50, A_amount:20, B_prob:40,	B_amount:60},
+  {A_prob:80,	A_amount:20, B_prob:50,	B_amount:70},
+  {A_prob:70,	A_amount:20, B_prob:40,	B_amount:80},
+  {A_prob:50,	A_amount:20, B_prob:30,	B_amount:80},
+  {A_prob:80,	A_amount:20, B_prob:50,	B_amount:80},
+  {A_prob:60,	A_amount:20, B_prob:40,	B_amount:70},
+  {A_prob:50,	A_amount:20, B_prob:30,	B_amount:60},
+  {A_prob:50,	A_amount:20, B_prob:40,	B_amount:50},
+  {A_prob:50,	A_amount:30, B_prob:40,	B_amount:80},
+  {A_prob:70,	A_amount:20, B_prob:50,	B_amount:50},
+  {A_prob:50,	A_amount:30, B_prob:40,	B_amount:70},
+  {A_prob:60,	A_amount:20, B_prob:50,	B_amount:50},
+  {A_prob:50,	A_amount:20, B_prob:30,	B_amount:70},
+  {A_prob:60,	A_amount:20, B_prob:30,	B_amount:70},
+  {A_prob:70,	A_amount:20, B_prob:30,	B_amount:80},
+  {A_prob:80,	A_amount:30, B_prob:50,	B_amount:80},
+  {A_prob:60,	A_amount:20, B_prob:40,	B_amount:50},
+  {A_prob:50,	A_amount:40, B_prob:40,	B_amount:80},
+  {A_prob:60,	A_amount:20, B_prob:30,	B_amount:60},
+  {A_prob:70,	A_amount:30, B_prob:40,	B_amount:80},
+  {A_prob:70,	A_amount:20, B_prob:30,	B_amount:70},
+  {A_prob:80,	A_amount:20, B_prob:30,	B_amount:80},
+  {A_prob:60,	A_amount:30, B_prob:30,	B_amount:80},
+  {A_prob:80,	A_amount:40, B_prob:50,	B_amount:80},
+  {A_prob:50,	A_amount:50, B_prob:40,	B_amount:80},
+  {A_prob:70,	A_amount:20, B_prob:30,	B_amount:60},
+  {A_prob:50,	A_amount:20, B_prob:20,	B_amount:70},
+  {A_prob:60,	A_amount:20, B_prob:30,	B_amount:50},
+  {A_prob:60,	A_amount:20, B_prob:20,	B_amount:80},
+  {A_prob:70,	A_amount:40, B_prob:50,	B_amount:70},
+  {A_prob:70,	A_amount:50, B_prob:50,	B_amount:80},
+  {A_prob:70,	A_amount:30, B_prob:30,	B_amount:80},
+  {A_prob:60,	A_amount:40, B_prob:40,	B_amount:70},
+  {A_prob:80,	A_amount:30, B_prob:50,	B_amount:50},
+  {A_prob:70,	A_amount:20, B_prob:30,	B_amount:50},
+  {A_prob:80,	A_amount:40, B_prob:50,	B_amount:70},
+  {A_prob:70,	A_amount:30, B_prob:40,	B_amount:60},
+  {A_prob:60,	A_amount:50, B_prob:50,	B_amount:70},
+  {A_prob:50,	A_amount:40, B_prob:30,	B_amount:60},
+  {A_prob:70,	A_amount:20, B_prob:30,	B_amount:40},
+  {A_prob:80,	A_amount:20, B_prob:30, B_amount:50},
+  {A_prob:60,	A_amount:40, B_prob:30, B_amount:70},
+  {A_prob:80,	A_amount:40, B_prob:50, B_amount:60},
+  {A_prob:70,	A_amount:40, B_prob:30, B_amount:80},
+  {A_prob:70,	A_amount:40, B_prob:50, B_amount:50},
+  {A_prob:50,	A_amount:60, B_prob:40, B_amount:70},
+  {A_prob:80,	A_amount:30, B_prob:40, B_amount:50},
+  {A_prob:50,	A_amount:20, B_prob:20, B_amount:40},
+  {A_prob:80,	A_amount:50, B_prob:40, B_amount:70},
+  {A_prob:70,	A_amount:60, B_prob:50, B_amount:70},
+  {A_prob:80,	A_amount:40, B_prob:30, B_amount:80},
+  {A_prob:70,	A_amount:40, B_prob:40, B_amount:50},
+  {A_prob:50,	A_amount:30, B_prob:20, B_amount:60},
+  {A_prob:60,	A_amount:30, B_prob:20, B_amount:70},
+  {A_prob:50,	A_amount:50, B_prob:20, B_amount:80},
+  {A_prob:70,	A_amount:40, B_prob:30, B_amount:60},
+  {A_prob:60,	A_amount:50, B_prob:30, B_amount:60},
+  {A_prob:80,	A_amount:30, B_prob:30, B_amount:50},
+  {A_prob:60,	A_amount:40, B_prob:20, B_amount:70},
+  {A_prob:60,	A_amount:40, B_prob:20, B_amount:80},
+  {A_prob:60,	A_amount:20, B_prob:20, B_amount:40},
+  {A_prob:60,	A_amount:60, B_prob:30, B_amount:80},
+  {A_prob:60,	A_amount:50, B_prob:20, B_amount:70},
+  {A_prob:60,	A_amount:50, B_prob:20, B_amount:80},
+  {A_prob:50,	A_amount:30, B_prob:20, B_amount:40},
+  {A_prob:60,	A_amount:40, B_prob:20, B_amount:60},
+  {A_prob:80,	A_amount:40, B_prob:20, B_amount:80},
+  {A_prob:50,	A_amount:40, B_prob:20, B_amount:50},
+  {A_prob:60,	A_amount:30, B_prob:20, B_amount:50},
+  {A_prob:50,	A_amount:60, B_prob:20, B_amount:70},
+  {A_prob:70,	A_amount:50, B_prob:20, B_amount:70},
+  {A_prob:60,	A_amount:60, B_prob:20, B_amount:70},
+  {A_prob:70,	A_amount:40, B_prob:20, B_amount:60},
+  {A_prob:80,	A_amount:40, B_prob:20, B_amount:70},
+  {A_prob:80,	A_amount:50, B_prob:20, B_amount:80},
+  {A_prob:60,	A_amount:60, B_prob:20, B_amount:80},
+  {A_prob:60,	A_amount:40, B_prob:20, B_amount:50},
+  {A_prob:60,	A_amount:30, B_prob:20, B_amount:40},
+]
 
 // TODO: ZC: Here I used a few choice pairs as an illustration. Will need to create more.
 
 // Create experimental choice pairs, in which option A is the high-prob, but low-amount option,
 // while option B is always the low-prob, but high-amount option.
-var gamble_combinations_exp = [
+/*var gamble_combinations_exp = [
   {A_prob: 60, A_amount: 10, B_prob: 40, B_amount: 40},
   {A_prob: 70, A_amount: 10, B_prob: 30, B_amount: 50},
   {A_prob: 60, A_amount: 20, B_prob: 40, B_amount: 50},
   {A_prob: 70, A_amount: 10, B_prob: 20, B_amount: 30},
-]
+]*/
 
 // repeat each combination to get the desired number of trials
 var exp_pairs = jsPsych.randomization.repeat(gamble_combinations_exp, 3);

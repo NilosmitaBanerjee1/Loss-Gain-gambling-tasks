@@ -227,7 +227,7 @@ var gamble_combinations_catch = [
 // and repeat the instruction and the practice again in case participants do not choose A?
 
 // repeat each combination to get the desired number of trials
-var catch_pairs = jsPsych.randomization.repeat(gamble_combinations_catch, 1);
+var catch_pairs = jsPsych.randomization.repeat(gamble_combinations_catch, 2);
 
 // for each trial, add the trial type 'catch'
 for (var i = 0; i < catch_pairs.length; i++) {
@@ -258,7 +258,7 @@ var horizontal_locations_factors = {
 };
 
 // all possibilities when the two options are presented horizontally
-var horizontal_locations = jsPsych.randomization.factorial(horizontal_locations_factors, 6);
+var horizontal_locations = jsPsych.randomization.factorial(horizontal_locations_factors, 10);
 
 // when the two options are presented top-bottom. Let's call this vertical arrangement.
 var vertical_locations_factors = {
@@ -268,13 +268,13 @@ var vertical_locations_factors = {
 };
 
 // all possibilities when the two options are presented vertically
-var vertical_locations = jsPsych.randomization.factorial(vertical_locations_factors, 6);
+var vertical_locations = jsPsych.randomization.factorial(vertical_locations_factors, 10);
 
 // combine all the possible locations
 var locations = horizontal_locations.concat(vertical_locations);
 
 // repeat each location match the number of trials
-locations = jsPsych.randomization.repeat(locations, 5);
+locations = jsPsych.randomization.repeat(locations, 10);
 
 /********************************************************
 Create trials.

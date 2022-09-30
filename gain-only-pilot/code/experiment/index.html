@@ -290,21 +290,7 @@ for (var i = 0; i < exp_trials.length; i++) {
   trials.push(one_trial);
 }
 
-//randomly select 6 trials to be used in practice
-
-var tmp_1 = jsPsych.randomization.shuffle(exp_trials);
-
-//make a deep copy of the array
-var tmp = tmp_1.map(a => {return {...a}});
-
-practice_trials = [];
-
-for (var i = 0; i < 6; i++) {
-  var tmp_trial = tmp[i];
-  tmp_trial.exp_trials = i + 1;
-  practice_trials.push(tmp_trial);
-}
-
+ß
 /********************************************************
 Add some more information to each trial.
 ********************************************************/

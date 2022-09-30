@@ -64,6 +64,7 @@ var outcome; // outcome of each trial, in points.
 
 var startRT; // how quickly participants start a trial, in milliseconds.
 var choiceRT; // how quickly participants make a choice, in milliseconds.
+var spin_degrees; //did the pie-chart stop under the black arrown or not (for. ex: near-miss)
 
 var all_outcomes =[]; // an empty array to save the outcomes of all experimental trials.
 
@@ -207,35 +208,23 @@ var gamble_combinations_exp = [
 ]*/
 
 // repeat each combination to get the desired number of trials
-var exp_pairs = jsPsych.randomization.repeat(gamble_combinations_exp, 1);
+var exp_trials = jsPsych.randomization.repeat(gamble_combinations_exp, 1);
 
 // for each trial, add the trial type 'experimental'
-for (var i = 0; i < exp_pairs.length; i++) {
-  exp_pairs[i].trial_type = "experimental";
+for (var i = 0; i < exp_trials.length; i++) {
+  exp_trials[i].trial_type = "experimental";
 }
 
-// Create catch choice pairs, in which option A is the high-prob, high-amount option,
-// while option B is the low-prob, low-amount option. Partiticpants should choose A.
-var gamble_combinations_catch = [
-  {A_prob: 60, A_amount: 40, B_prob: 40, B_amount: 10},
-  {A_prob: 80, A_amount: 60, B_prob: 30, B_amount: 20},
-  {A_prob: 20, A_amount: 80, B_prob: 20, B_amount: 10},
-  {A_prob: 70, A_amount: 30, B_prob: 20, B_amount: 20},
-]
-
-// TODO: ZC idea: maybe use catch trials as the practice trials,
-// and repeat the instruction and the practice again in case participants do not choose A?
-
+// Prev. approach
 // repeat each combination to get the desired number of trials
-var catch_pairs = jsPsych.randomization.repeat(gamble_combinations_catch, 2);
-
-// for each trial, add the trial type 'catch'
-for (var i = 0; i < catch_pairs.length; i++) {
-  catch_pairs[i].trial_type = "catch";
-}
+//var practice = jsPsych.randomization.shuffle()
+//for each trial, add the trial type 'catch'
+ //for (var i = 0; i < catch_pairs.length; i++) {
+//catch_pairs[i].trial_type = "catch";
+//}
 
 // combine the array of experimental and catch pairs
-var all_pairs = exp_pairs.concat(catch_pairs);
+//var all_pairs = exp_trials.concat(catch_pairs);
 
 /********************************************************
 Determine the locations of the circles
@@ -282,13 +271,14 @@ Create trials.
 
 var trials = []; // an empty array to hold all trials
 
-all_pairs = jsPsych.randomization.shuffle(all_pairs);
+//all_pairs = jsPsych.randomization.shuffle(all_pairs);
+exp_trials = jsPsych.randomization.shuffle(exp_trials);
 locations = jsPsych.randomization.shuffle(locations);
 
 // go through all choice pairs one by one
-for (var i = 0; i < all_pairs.length; i++) {
+for (var i = 0; i < exp_trials.length; i++) {
 
-  var current_trial = all_pairs[i];
+  var current_trial = exp_trials[i];
 
   // select a corresponding location from the locations array
   var current_location = locations[i];
@@ -298,6 +288,21 @@ for (var i = 0; i < all_pairs.length; i++) {
 
   // add the current trial to the trials array
   trials.push(one_trial);
+}
+
+//randomly select 6 trials to be used in practice
+
+var tmp_1 = jsPsych.randomization.shuffle(exp_trials);
+
+//make a deep copy of the array
+var tmp = tmp_1.map(a => {return {...a}});
+
+practice_trials = [];
+
+for (var i = 0; i < 6; i++) {
+  var tmp_trial = tmp[i];
+  tmp_trial.exp_trials = i + 1;
+  practice_trials.push(tmp_trial);
 }
 
 /********************************************************
@@ -1035,3 +1040,5 @@ jsPsych.run(timeline);
 
 </script>
 </html>
+
+

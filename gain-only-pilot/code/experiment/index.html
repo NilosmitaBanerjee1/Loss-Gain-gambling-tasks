@@ -413,7 +413,7 @@ var instruct_images = [ 'Instructions/Slide1.png', 'Instructions/Slide2.png',
                         'Instructions/Slide9.png','Instructions/Slide10.png',
                         'Instructions/Slide11.png','Instructions/Slide12.png'];
 
-var all_audios = ['cash.wav', 'buzz.wav'];
+var all_audios = ['cash.wav', 'neutral_swoosh.wav'];
 
 var preload = {
   type: jsPsychPreload,
@@ -828,7 +828,7 @@ var create_html_outcome = function(){
   // add win and loss sound
   html_string = html_string +
       '<img src onerror= "show_gamble_outcome();">' +
-      '<audio id="loss_sound" src="buzz.wav"></audio>' +
+      '<audio id="loss_sound" src="neutral_swoosh.wav"></audio>' +
       '<audio id="win_sound" src="cash.wav"></audio>';
 
   // add the closing div tag

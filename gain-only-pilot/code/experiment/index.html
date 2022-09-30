@@ -46,6 +46,10 @@ var trial_type; // trial type, experimental or catch.
 var trial_number; // trial number in each block.
 var Ntrial; // total number of trials in each block.
 
+var arrangement; // the arrangement of the options, horizontal or vertical
+var high_loc; // the location of the high-probability option
+var prob_loc; // the location of the probability circle
+
 // the locations of the circles containing different pieces of information
 // coult be 'left-top', 'left-bottom', 'right-top', or 'right-bottom'.
 var A_amount_loc, A_prob_loc, B_amount_loc, B_prob_loc;
@@ -60,16 +64,16 @@ var A_color, B_color;
 var chosen_color, chosen_amount, chosen_prob;
 
 var choice; // choice on each game, A or B.
-var outcome; // outcome of each trial, in points.
+var outcome; // outcome of each trial, win or no_win.
+var outcome_amount; // the amount of points gained.
 
 var startRT; // how quickly participants start a trial, in milliseconds.
 var choiceRT; // how quickly participants make a choice, in milliseconds.
-var spin_degrees; //did the pie-chart stop under the black arrown or not (for. ex: near-miss)
+var spin_degrees; // did the pie-chart stop under the black arrown or not (for. ex: near-miss)
 
 var all_outcomes =[]; // an empty array to save the outcomes of all experimental trials.
 
 // variables to save for the mouse tracking data
-var phase; // the phase in a trial, 'sample' (before the choice buttons appear) or 'select' (after the choice buttons appear).
 var mouse_rt; // rt since the beginning of tracking, in milliseconds.
 var x, y; // the x, y coordinates of the mouse cursor
 var element; // the html element that the mouse cursor currently hovers over
@@ -102,9 +106,9 @@ function randomIntFromInterval(min, max) { // min and max included
   Create trials to be used in the experiment
 ********************************************************/
 
-//combinations generated in R Code
-var gamble_combinations_exp = [
-  {"A_prob":60,"A_amount":20,"B_prob":40,"B_amount":80}, // exp trials = 80
+// 80 experimental trials
+var exp_pairs = [
+  {"A_prob":60,"A_amount":20,"B_prob":40,"B_amount":80},
   {"A_prob":80,"A_amount":20,"B_prob":50,"B_amount":80},
   {"A_prob":60,"A_amount":30,"B_prob":50,"B_amount":80},
   {"A_prob":60,"A_amount":20,"B_prob":50,"B_amount":60},
@@ -183,8 +187,17 @@ var gamble_combinations_exp = [
   {"A_prob":70,"A_amount":50,"B_prob":20,"B_amount":80},
   {"A_prob":60,"A_amount":30,"B_prob":20,"B_amount":40},
   {"A_prob":60,"A_amount":60,"B_prob":20,"B_amount":70},
-  {"A_prob":80,"A_amount":40,"B_prob":20,"B_amount":60},
-  {"A_prob":50,"A_amount":80,"B_prob":20,"B_amount":40}, // catch trials = 10
+  {"A_prob":80,"A_amount":40,"B_prob":20,"B_amount":60}
+]
+
+// for each trial, add the trial type 'experimental'
+for (var i = 0; i < exp_pairs.length; i++) {
+  exp_pairs[i].trial_type = "experimental";
+}
+
+// 10 catch trials
+var catch_pairs = [
+  {"A_prob":50,"A_amount":80,"B_prob":20,"B_amount":40},
   {"A_prob":60,"A_amount":70,"B_prob":50,"B_amount":30},
   {"A_prob":80,"A_amount":70,"B_prob":30,"B_amount":60},
   {"A_prob":60,"A_amount":40,"B_prob":30,"B_amount":30},
@@ -196,35 +209,13 @@ var gamble_combinations_exp = [
   {"A_prob":70,"A_amount":60,"B_prob":20,"B_amount":30}
 ]
 
-// TODO: ZC: Here I used a few choice pairs as an illustration. Will need to create more.
-
-// Create experimental choice pairs, in which option A is the high-prob, but low-amount option,
-// while option B is always the low-prob, but high-amount option.
-/*var gamble_combinations_exp1 = [
-  {A_prob: 60, A_amount: 10, B_prob: 40, B_amount: 40},
-  {A_prob: 70, A_amount: 10, B_prob: 30, B_amount: 50},
-  {A_prob: 60, A_amount: 20, B_prob: 40, B_amount: 50},
-  {A_prob: 70, A_amount: 10, B_prob: 20, B_amount: 30},
-]*/
-
-// repeat each combination to get the desired number of trials
-var exp_trials = jsPsych.randomization.repeat(gamble_combinations_exp, 1);
-
-// for each trial, add the trial type 'experimental'
-for (var i = 0; i < exp_trials.length; i++) {
-  exp_trials[i].trial_type = "experimental";
+// for each trial, add the trial type 'catch'
+for (var i = 0; i < catch_pairs.length; i++) {
+  catch_pairs[i].trial_type = "catch";
 }
 
-// Prev. approach
-// repeat each combination to get the desired number of trials
-//var practice = jsPsych.randomization.shuffle()
-//for each trial, add the trial type 'catch'
- //for (var i = 0; i < catch_pairs.length; i++) {
-//catch_pairs[i].trial_type = "catch";
-//}
-
 // combine the array of experimental and catch pairs
-//var all_pairs = exp_trials.concat(catch_pairs);
+var all_pairs = exp_pairs.concat(catch_pairs);
 
 /********************************************************
 Determine the locations of the circles
@@ -271,14 +262,13 @@ Create trials.
 
 var trials = []; // an empty array to hold all trials
 
-//all_pairs = jsPsych.randomization.shuffle(all_pairs);
-exp_trials = jsPsych.randomization.shuffle(exp_trials);
+all_pairs = jsPsych.randomization.shuffle(all_pairs);
 locations = jsPsych.randomization.shuffle(locations);
 
 // go through all choice pairs one by one
-for (var i = 0; i < exp_trials.length; i++) {
+for (var i = 0; i < all_pairs.length; i++) {
 
-  var current_trial = exp_trials[i];
+  var current_trial = all_pairs[i];
 
   // select a corresponding location from the locations array
   var current_location = locations[i];
@@ -529,17 +519,22 @@ var enter_subjectID = {
 
     // write headers
     var data_row = "subjectID, age, gender, nationality, exp_start_time, browser, browser_version, width, height, vsync_rate, os\n";
-    appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
+    appendData('Gain-only-demo-subject-' + subjID +'.csv', data_row);
 
-    var data_row = "subjectID, block_type, block_number, trial_number" +
-                   "A_amount, A_prob, B_amount, B_prob, startRT, choiceRT, choice, outcome, outcome_amount, spin_degrees\n"; //check with ZC
-    appendData('RiskyMouse_main_'+ subjID +'.csv', data_row); //removed variable - sampleRT
+    var data_row = "subjectID, block_type, block_number, trial_number, " +
+                   "trial_type, arrangement, prob_loc, high_loc, " +
+                   "A_amount_loc, A_prob_loc, B_amount_loc, B_prob_loc, " +
+                   "A_amount, A_prob, B_amount, B_prob, A_color, B_color," +
+                   "chosen_color, chosen_amount, chosen_prob, choice," +
+                   "startRT, choiceRT, spin_degrees, outcome, outcome_amount\n";
 
-    var data_row = "subjectID, block_type, block_number, trial_number, phase, mouse_rt, x, y, element, info_type\n";
-    appendData('RiskyMouse_tracking_'+ subjID +'.csv', data_row);
+    appendData('Gain-only-main-subject-'+ subjID +'.csv', data_row);
+
+    var data_row = "subjectID, block_type, block_number, trial_number, mouse_rt, x, y, element, info_type\n";
+    appendData('Gain-only-tracking-subject-'+ subjID +'.csv', data_row);
 
     var data_row = 'subjectID, total, bonus\n';
-    appendData('RiskyMouse_Pay_' + subjID +'.csv', data_row);
+    appendData('Gain-only-pay-subject-_' + subjID +'.csv', data_row);
 
   }
 };
@@ -578,7 +573,7 @@ var enter_gender = {
         data.browser + ',' +  data.browser_version + ',' +  data.width + ',' +  data.height + ',' +
         data.vsync_rate + ',' +  data.os + '\n';
 
-    appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
+    appendData('Gain-only-demo-subject-' + subjID +'.csv', data_row);
 
   }
 };
@@ -623,6 +618,11 @@ var risk_start = {
 
     // get the parameters of the current trial
     trial_number = jsPsych.timelineVariable('trial_number');
+    trial_type = jsPsych.timelineVariable('trial_type');
+
+    arrangement = jsPsych.timelineVariable('arrangement');
+    high_loc = jsPsych.timelineVariable('high_loc');
+    prob_loc = jsPsych.timelineVariable('prob_loc');
 
     A_amount = jsPsych.timelineVariable('A_amount');
     A_prob = jsPsych.timelineVariable('A_prob');
@@ -655,10 +655,10 @@ var save_mouse_data = function(mouse_data){
   // create a dictionary to show the information type shown in each location
   var loc_info_dict = {};
 
-  loc_info_dict["loc" + A_amount_loc] = 'A_amount';
-  loc_info_dict["loc" + A_prob_loc] = 'A_prob';
-  loc_info_dict["loc" + B_amount_loc] = 'B_amount';
-  loc_info_dict["loc" + B_prob_loc] = 'B_prob';
+  loc_info_dict[A_amount_loc] = 'A_amount';
+  loc_info_dict[A_prob_loc] = 'A_prob';
+  loc_info_dict[B_amount_loc] = 'B_amount';
+  loc_info_dict[B_prob_loc] = 'B_prob';
 
   if (A_color === "blue") {
     loc_info_dict['choice-button-left'] = 'A_choice_button';
@@ -686,16 +686,15 @@ var save_mouse_data = function(mouse_data){
 
     var one_row_string =
       subjID + ',' + block_type + ',' + block_number + ',' +
-      trial_number + ',' + phase + ',' +
-      mouse_rt + ',' + x + ',' + y + ',' + element + ',' +
-      info_type + '\n';
+      trial_number + ',' + mouse_rt + ',' + x + ',' + y + ',' +
+      element + ',' + info_type + '\n';
 
     mouse_data_string = mouse_data_string +  one_row_string;
 
   }
 
   // save the data to a csv file
-  appendData('RiskyMouse_tracking_'+ subjID +'.csv', mouse_data_string);
+  appendData('Gain-only-tracking-subject-'+ subjID +'.csv', mouse_data_string);
 
 }
 
@@ -706,14 +705,16 @@ var save_mouse_data = function(mouse_data){
 var save_main_data = function(){
   // create a string to hold all main data
   var main_data_string =
-    subjID + ',' + block_type + ',' + block_number + ',' +
-    trial_number + ',' + A_amount_loc + ',' + A_prob_loc + ',' + B_amount_loc + ',' +
-    B_prob_loc + ',' + A_amount + ',' + A_prob + ',' + B_amount + ',' + B_prob
-    startRT + ',' + choiceRT + ',' +
-    choice + ',' + outcome + ',' + outcome_amount + '\n';
+    subjID + ',' + block_type + ',' + block_number + ',' + trial_number + ',' + trial_type + ',' +
+    arrangement + ',' + prob_loc + ',' + high_loc + ',' +
+    A_amount_loc + ',' + A_prob_loc + ',' + B_amount_loc + ',' + B_prob_loc + ',' +
+    A_amount + ',' + A_prob + ',' + B_amount + ',' + B_prob + ',' +
+    A_color + ',' + B_color + ',' + chosen_color + ',' + chosen_amount + ',' + chosen_prob + ',' +
+    choice + ',' + startRT + ',' + choiceRT + ',' + spin_degrees + ',' +
+    outcome + ',' + outcome_amount + '\n';
 
   // save the data to a csv file
-  appendData('RiskyMouse_main_'+ subjID +'.csv', main_data_string);
+  appendData('Gain-only-main-subject-'+ subjID +'.csv', main_data_string);
 
 }
 
@@ -770,13 +771,12 @@ var create_html_sampling = function(){
 var risk_sampling_decide = {
   type: jsPsychHtmlMouseResponse,
   stimulus: 'placeholder',
-  tracking_elements: ['left-top', 'left-bottom', 'right-top', 'right-bottom'],
+  tracking_elements: ['left-top', 'left-bottom', 'right-top', 'right-bottom', 'choice-button-left','choice-button-right'],
   choices:['choice-button-left','choice-button-right'],
   on_start: function(risk_sampling_decide){
     risk_sampling_decide.stimulus = create_html_sampling();
   },
   on_finish: function(data){
-    //sample = data.rt;
 
     choiceRT = data.rt;
 
@@ -798,7 +798,6 @@ var risk_sampling_decide = {
     }
 
     // save the mouse tracking data
-     phase = "decision";
      save_mouse_data(data.mouse_tracking);
     }
   }
@@ -845,7 +844,7 @@ function show_gamble_outcome() {
   var wheel = document.getElementById("outcome-info-prob");
 
   // randomly select a number between 1 and 360; this will be how many degrees the wheel will spin
-  var spin_degrees = randomIntFromInterval(1, 360);
+  spin_degrees = randomIntFromInterval(1, 360);
 
   // suppose the chosen option has 10% of the area colored green (10% * 360 = 36 degrees).
   // it means the wheel will need to spin between 90% * 360 and 360 degress in order to land on green.
@@ -855,8 +854,6 @@ function show_gamble_outcome() {
   } else {
     outcome = 'win';
   }
-  // TODO: ZC idea: save the spin_degrees variable in the output file as well?
-  // this will potentially allow us to see whether the outcomes are 'near' wins or losses.
 
   // to create the impression that the wheel is spinning quickly
   // we will spin the wheel for another 3 or 4 full circles
@@ -877,8 +874,6 @@ function show_gamble_outcome() {
        outcome_amount = 0;
        document.getElementById("outcome-message").innerHTML = '<p>0</p>';
        document.getElementById("loss_sound").play();
-       // TODO: ZC - need to find a neutral sound for the no-win outcome.
-       // the current loss sound may be better suited for the loss outcome in the loss-only version.
     }
   }
 }
@@ -906,7 +901,8 @@ var risk_data = {
   choices: [],
   tracking_elements: [],
   trial_duration: 500,
-  on_finish: function(){
+  on_finish: function(data){
+
     // register the data from one trial
     save_main_data();
 
@@ -930,14 +926,14 @@ var debrief = {
     var message =
     "<p>This is the end of this experiment. Thank you for your participation!</p>" +
     "<p>In this experiment, we are interested in how wins and losses may influence how people make choices afterwards.</p>" +
-    "<p>The program has randomly picked 10 trials:</p><br>";
+    "<p>The program has randomly picked 5 trials:</p><br>";
 
-    // randomly pick 10 trials
+    // randomly pick 5 trials
     all_outcomes = jsPsych.randomization.shuffle(all_outcomes);
 
     var amount_sum = 0;
 
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 5; i++) {
       var tmp_trial = all_outcomes[i].trial_number;
       var tmp_amount = all_outcomes[i].outcome_amount;
 
@@ -970,10 +966,10 @@ var debrief = {
 
     // save the data as csv file
     var data_row = subjID + ',' + amount_sum + ',' + bonus + '\n';
-    appendData('RiskyMouse_Pay_' + subjID +'.csv', data_row);
+    appendData('Gain-only-pay-subject-' + subjID +'.csv', data_row);
 
     message = message +
-    "<p>We really appreciate your participation and contribution to this research. If you have any questions, you can contact the researcher at zhang.chen@ugent.be.</p><br><br>"+
+    "<p>We really appreciate your participation and contribution to this research. If you have any questions, you can contact the researcher at nilosmita.banerjee@ulb.be .</p><br><br>"+
     "<p><a href='https://app.prolific.co/submissions/complete?cc=CSS04LEE'>Click here to complete the experiment and return to Prolific.</a></p>";
 
     debrief.stimulus = message;
@@ -1030,5 +1026,3 @@ jsPsych.run(timeline);
 
 </script>
 </html>
-
-

@@ -37,14 +37,14 @@ if (document.location.host) { // returns your host or null
 } else {
   var online = false;
 };
-// Note for AkB: Gamble A = Blue Gamble; Gamble B = Yellow Gamble
 
 var timeline = []; // create an empty timeline variable
 var subjID; // subjectID
 var block_type; // block type, practice or experimental
 var block_number = 1; // block number
-var trial_number; // trial number in each block
-var Ntrial; // total number of trials
+var trial_type; // trial type, experimental or catch.
+var trial_number; // trial number in each block.
+var Ntrial; // total number of trials in each block.
 
 // the locations of the circles containing different pieces of information
 // coult be 'left-top', 'left-bottom', 'right-top', or 'right-bottom'.
@@ -214,6 +214,7 @@ var exp_trials = jsPsych.randomization.repeat(gamble_combinations_exp, 1);
 for (var i = 0; i < exp_trials.length; i++) {
   exp_trials[i].trial_type = "experimental";
 }
+
 // Prev. approach
 // repeat each combination to get the desired number of trials
 //var practice = jsPsych.randomization.shuffle()
@@ -224,6 +225,7 @@ for (var i = 0; i < exp_trials.length; i++) {
 
 // combine the array of experimental and catch pairs
 //var all_pairs = exp_trials.concat(catch_pairs);
+
 /********************************************************
 Determine the locations of the circles
 
@@ -287,6 +289,102 @@ for (var i = 0; i < exp_trials.length; i++) {
   // add the current trial to the trials array
   trials.push(one_trial);
 }
+
+
+/********************************************************
+Add some more information to each trial.
+********************************************************/
+
+/* go through the generated trials one by one and add more information
+information that we will need to determine the layout of each trial
+(1) the location of four circles
+(2) the color of four circles
+*/
+for (var i = 0; i < trials.length; i++) {
+  var one_trial = trials[i];
+
+  one_trial.trial_number = i + 1;
+
+  // determine the position for each of the four circles
+  var high_location = one_trial.high_loc; // get where option A will be presented
+  var prob_location = one_trial.prob_loc; // get where the probability info will be presented
+
+  // consider the case when the two options are presented horizontally
+  if (one_trial.arrangement === "horizontal") {
+
+    // when A is presented on the left, B will be on the right; vice versa
+    if (high_location === "left") {
+      var A_loc = "left";
+      var B_loc = "right";
+    } else {
+      var A_loc = "right";
+      var B_loc = "left";
+    }
+
+    // when probability is presented on top, amount will be on bottom; vice versa
+    if (prob_location === "top") {
+      var amount_location = "bottom";
+    } else {
+      var amount_location = "top";
+    }
+
+    // determine the positions of all four circles
+    one_trial.A_amount_loc = A_loc + '-' + amount_location;
+    one_trial.A_prob_loc = A_loc + '-' + prob_location;
+    one_trial.B_amount_loc = B_loc + '-' + amount_location;
+    one_trial.B_prob_loc = B_loc + '-' + prob_location;
+
+    // determine the color of all four circles;
+    // to simplify things, we will always present the blue circles on the left
+    if (A_loc === "left") {
+      one_trial.A_color = "blue";
+      one_trial.B_color = "yellow";
+    } else {
+      one_trial.A_color = "yellow";
+      one_trial.B_color = "blue";
+    }
+
+  }
+
+  // consider the case when the two options are presented vertically
+  if (one_trial.arrangement === "vertical") {
+
+    // when A is presented on the top, B will be on the bottom; vice versa
+    if (high_location === "top") {
+      var A_loc = "top";
+      var B_loc = "bottom";
+    } else {
+      var A_loc = "bottom";
+      var B_loc = "top";
+    }
+
+    // when probability is presented on the left, amount will be on right; vice versa
+    if (prob_location === "left") {
+      var amount_location = "right";
+    } else {
+      var amount_location = "left";
+    }
+
+    // determine the positions of all four circles
+    one_trial.A_amount_loc = amount_location + '-' + A_loc;
+    one_trial.A_prob_loc = prob_location + '-' + A_loc;
+    one_trial.B_amount_loc = amount_location + '-' + B_loc;
+    one_trial.B_prob_loc = prob_location + '-' + B_loc;
+
+    // determine the color of all four circles;
+    // to simplify things, we will always present the blue circles on the top
+    if (A_loc === "top") {
+      one_trial.A_color = "blue";
+      one_trial.B_color = "yellow";
+    } else {
+      one_trial.A_color = "yellow";
+      one_trial.B_color = "blue";
+    }
+
+  }
+
+}
+
 // randomly select 6 trials to be used in practice
 var tmp_1 = jsPsych.randomization.shuffle(trials);
 
@@ -306,10 +404,12 @@ for (var i = 0; i < 6; i++) {
 /***************************************************************/
 /* all images and audios used in the experiment */
 
-var instruct_images = [ 'Instructions/Slide1.png', 'Instructions/Slide2.png', 
+// TODO:  ZC - will need to adjust the instructions. The file sizes look a bit strange.
+// in power point - file - export - save every slide as png
+var instruct_images = [ 'Instructions/Slide1.png', 'Instructions/Slide2.png',
                         'Instructions/Slide3.png', 'Instructions/Slide4.png',
-                        'Instructions/Slide5.png', 'Instructions/Slide6.png', 
-                        'Instructions/Slide7.png', 'Instructions/Slide8.png', 
+                        'Instructions/Slide5.png', 'Instructions/Slide6.png',
+                        'Instructions/Slide7.png', 'Instructions/Slide8.png',
                         'Instructions/Slide9.png'];
 
 var all_audios = ['cash.wav', 'buzz.wav'];
@@ -427,8 +527,8 @@ var enter_subjectID = {
     var data_row = "subjectID, age, gender, nationality, exp_start_time, browser, browser_version, width, height, vsync_rate, os\n";
     appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
 
-    var data_row = "subjectID, block_type, block_number, trial_number, win_location, loss_location, " +
-                   "gambleBlue_amount, probBlue_amount, gambleYellow_amount, probYellow_amount, startRT, choiceRT, choice, outcome, outcome_amount\n";
+    var data_row = "subjectID, block_type, block_number, trial_number" +
+                   "A_amount, A_prob, B_amount, B_prob, startRT, choiceRT, choice, outcome, outcome_amount, spin_degrees\n"; //check with ZC
     appendData('RiskyMouse_main_'+ subjID +'.csv', data_row); //removed variable - sampleRT
 
     var data_row = "subjectID, block_type, block_number, trial_number, phase, mouse_rt, x, y, element, info_type\n";
@@ -495,9 +595,12 @@ var create_html_start = function(){
 
   var html_string = '<div class = "game-interface">';
 
-  // add the start message
+  // add a small circular start button
+  html_string = html_string + '<div id = "start-button"></div>';
+
+  // add the start message to show the number of trials left
   html_string = html_string +
-    '<div id = "start-button"><p> Start' + trial_number + '/' + Ntrial +'</p></div>';
+    '<div id = "start-message">Click on the button to start trial ' + trial_number + '/'+ Ntrial + '</div>';
 
   // add the closing div tag
   html_string = html_string +
@@ -517,16 +620,18 @@ var risk_start = {
     // get the parameters of the current trial
     trial_number = jsPsych.timelineVariable('trial_number');
 
-    gambleBlue_amount = jsPsych.timelineVariable('gambleBlue_amount');
-    probBlue_amount = jsPsych.timelineVariable('probBlue_amount');
-    gambleYellow_amount = jsPsych.timelineVariable('gambleYellow_amount');
-    probYellow_amount = jsPsych.timelineVariable('probYellow_amount');
+    A_amount = jsPsych.timelineVariable('A_amount');
+    A_prob = jsPsych.timelineVariable('A_prob');
+    B_amount = jsPsych.timelineVariable('B_amount');
+    B_prob = jsPsych.timelineVariable('B_prob');
 
+    A_amount_loc = jsPsych.timelineVariable('A_amount_loc');
+    A_prob_loc = jsPsych.timelineVariable('A_prob_loc');
+    B_amount_loc = jsPsych.timelineVariable('B_amount_loc');
+    B_prob_loc = jsPsych.timelineVariable('B_prob_loc');
 
-    gambleBlue_location = jsPsych.timelineVariable('gambleBlue_location');
-    probBlue_location = jsPsych.timelineVariable('probBlue_location');
-    gambleYellow_location = jsPsych.timelineVariable('gambleYellow_location');
-    probYellow_location = jsPsych.timelineVariable('probYellow_location');
+    A_color = jsPsych.timelineVariable('A_color');
+    B_color = jsPsych.timelineVariable('B_color');
 
     // create the html string to be presented
     risk_start.stimulus = create_html_start();
@@ -546,12 +651,19 @@ var save_mouse_data = function(mouse_data){
   // create a dictionary to show the information type shown in each location
   var loc_info_dict = {};
 
-  loc_info_dict["loc" + gambleBlue_location] = 'Amount Blue Gamble';
-  loc_info_dict["loc" + probBlue_location] = 'Probability Blue Gamble';
-  loc_info_dict["loc" + gambleYellow_location] = 'Amount Yellow Gamble';
-  loc_info_dict["loc" + probYellow_location] = 'Probability Yellow Gamble';
-  loc_info_dict['choice-button-left'] = 'Gamble Blue';
-  loc_info_dict['choice-button-right'] = 'Gamble Yellow';
+  loc_info_dict["loc" + A_amount_loc] = 'A_amount';
+  loc_info_dict["loc" + A_prob_loc] = 'A_prob';
+  loc_info_dict["loc" + B_amount_loc] = 'B_amount';
+  loc_info_dict["loc" + B_prob_loc] = 'B_prob';
+
+  if (A_color === "blue") {
+    loc_info_dict['choice-button-left'] = 'A_choice_button';
+    loc_info_dict['choice-button-right'] = 'B_choice_button';
+  } else {
+    loc_info_dict['choice-button-left'] = 'B_choice_button';
+    loc_info_dict['choice-button-right'] = 'A_choice_button';
+  }
+
   loc_info_dict["none"] = "none";
 
   // create an empty string to hold all tracking data later on
@@ -591,10 +703,10 @@ var save_main_data = function(){
   // create a string to hold all main data
   var main_data_string =
     subjID + ',' + block_type + ',' + block_number + ',' +
-    trial_number + ',' + gambleBlue_location + ',' + probBlue_location + ',' + gambleYellow_location + ',' +
-    probYellow_location + ',' + gambleBlue_amount + ',' + probBlue_amount + ',' + gambleYellow_amount + ',' + probYellow_amount
+    trial_number + ',' + A_amount_loc + ',' + A_prob_loc + ',' + B_amount_loc + ',' +
+    B_prob_loc + ',' + A_amount + ',' + A_prob + ',' + B_amount + ',' + B_prob
     startRT + ',' + choiceRT + ',' +
-    choice + ',' + outcome + ',' + outcome_amount + '\n'; //removed variable - sampleRT
+    choice + ',' + outcome + ',' + outcome_amount + '\n';
 
   // save the data to a csv file
   appendData('RiskyMouse_main_'+ subjID +'.csv', main_data_string);
@@ -610,46 +722,42 @@ var create_html_sampling = function(){
 
   var html_string = '<div class = "game-interface">';
 
-  // add the circle showing the gamble Blue amount info
+  // add the circle containing the probability info of option A
   html_string = html_string +
-    '<div id = "loc' + gambleBlue_location + '" class = "info-box info-box-gambleBlue">'+
-    '<p id = "loc' + gambleBlue_location + '-front">€</p>'+
-    '<div id = "loc' + gambleBlue_location +'-back" class = "amount_bar" ' +
-    'style="background: linear-gradient(to top, red , red ' + gambleBlue_amount + '%, #BFC9CA ' 
-                                        + gambleBlue_amount +'%)"></div>'+
+    '<div id = "' + A_prob_loc+ '" class = "info-box ' + A_color + '">' +
+    '<p id = "' + A_prob_loc + '-front">%</p>' +
+    '<div id = "' + A_prob_loc + '-back" class = "pie-chart" style= "background: conic-gradient(#008450 0% ' + A_prob + '%, #BFC9CA ' + A_prob + '% 100%);"></div>' +
     '</div>';
 
-  // add the circle showing the gamble Blue prob info
+  // add the circle containing the amount info of option A
   html_string = html_string +
-    '<div id = "loc' + probBlue_location + '" class = "info-box info-box-probBlue">'+
-    '<p id = "loc' + probBlue_location + '-front">%</p>'+
-    '<div id = "loc' + probBlue_location +'-back" class = "pie-chart" ' + 
-    'style="background: conic-gradient(white 0%' + probBlue_amount +'%, red '
-                                             + probBlue_amount +'% 100%)"></div>'+
+    '<div id = "' + A_amount_loc + '" class = "info-box ' + A_color + '">' +
+    '<p id = "' + A_amount_loc + '-front">£</p>' +
+    '<div id = "' + A_amount_loc + '-back" class = "amount_bar" style="background: linear-gradient(to top, #008450, #008450 ' + A_amount + '%, #BFC9CA '+ A_amount + '%)"></div>' +
     '</div>';
-  
-  // add the circle showing the gamble Yellow amount info
+    // TODO: ZC: this assumes that a completely filled bar stands for 100 points
+
+  // add the circle containing the probability info of option B
   html_string = html_string +
-    '<div id = "loc' + gambleYellow_location + '" class = "info-box info-box-gambleYellow">'+
-    '<p id = "loc' + gambleYellow_location + '-front">€</p>'+
-    '<div id = "loc' + gambleYellow_location +'-back" class = "amount_bar" ' +
-    'style="background: linear-gradient(to top, red , red ' + gambleYellow_amount + '%, #BFC9CA ' 
-                                                         + gambleYellow_amount +'%)"></div>'+
+    '<div id = "' + B_prob_loc+ '" class = "info-box ' + B_color + '">' +
+    '<p id = "' + B_prob_loc + '-front">%</p>' +
+    '<div id = "' + B_prob_loc + '-back" class = "pie-chart" style= "background: conic-gradient(#008450 0% ' + B_prob + '%, #BFC9CA ' + B_prob + '% 100%);"></div>' +
     '</div>';
 
-  // add the circle showing the gamble Yellow prob info
+  // add the circle containing the amount info of option B
   html_string = html_string +
-    '<div id = "loc' + probYellow_location + '" class = "info-box info-box-probYellow">'+
-    '<p id = "loc' + probYellow_location + '-front">%</p>'+
-    '<div id = "loc' + probYellow_location +'-back" class = "pie-chart" ' +
-    'style="background: conic-gradient(white 0% ' + probYellow_amount +'%, red ' 
-                                               + probYellow_amount +'% 100%)"></div>'+
+    '<div id = "' + B_amount_loc + '" class = "info-box ' + B_color + '">' +
+    '<p id = "' + B_amount_loc + '-front">£</p>' +
+    '<div id = "' + B_amount_loc + '-back" class = "amount_bar" style="background: linear-gradient(to top, #008450, #008450 ' + B_amount + '%, #BFC9CA '+ B_amount + '%)"></div>' +
     '</div>';
-    // add choice buttons
+
+  // add the two choice buttons
   html_string = html_string +
     '<div id = "choice-button-left"></div>' +
-    '<div id = "choice-button-right"></div>' +
-    '</div>';
+    '<div id = "choice-button-right"></div>';
+
+  // add the closing div tag
+  html_string = html_string + '</div>';
 
   return html_string;
 
@@ -658,242 +766,129 @@ var create_html_sampling = function(){
 var risk_sampling_decide = {
   type: jsPsychHtmlMouseResponse,
   stimulus: 'placeholder',
-  tracking_elements: [],
+  tracking_elements: ['left-top', 'left-bottom', 'right-top', 'right-bottom'],
   choices:['choice-button-left','choice-button-right'],
   on_start: function(risk_sampling_decide){
     risk_sampling_decide.stimulus = create_html_sampling();
-    risk_sampling_decide.tracking_elements = ['loc'+ gambleBlue_location, 'loc'+ probBlue_location, 
-                                              'loc' + gambleYellow_location, 'loc' + probYellow_location,
-                                              'choice-button-left', 'choice-button-right'];
   },
   on_finish: function(data){
     //sample = data.rt;
-    
+
     choiceRT = data.rt;
 
     // determine which option is selected
     if (data.selected_choice === "choice-button-left") {
-      choice = "Gamble Blue";
+      chosen_color = "blue";
     } else {
-      choice = "Gamble Yellow";
+      chosen_color = "yellow";
+    }
+
+    if (chosen_color === A_color) {
+      choice = "A";
+      chosen_amount = A_amount;
+      chosen_prob = A_prob;
+    } else {
+      choice = "B";
+      chosen_amount = B_amount;
+      chosen_prob = B_prob;
     }
 
     // save the mouse tracking data
-     phase = "sampling and decision";
+     phase = "decision";
      save_mouse_data(data.mouse_tracking);
     }
   }
 
 /********************************************************
-            Decision Outcome - Gamble Blue
+            Decision Outcome
 ********************************************************/
-// function to generate the html string when participants accept the gamble
-var create_html_outcome_gambleBlue = function(show_result = false){
+// function to generate the html string for showing the outcome
+var create_html_outcome = function(){
 
   var html_string = '<div class = "game-interface">';
 
-  // outcome reminder 
+  // add the circle showing the probability info
   html_string = html_string +
-    '<div id = "choice-reminder"></div>';
-
-  // add the circle showing the gamble Blue amount
-  html_string = html_string +
-    '<div id = "outcome-info-gambleBlue">' +
-    '<div class = "amount_bar" style="background: linear-gradient(to top, red , red ' 
-                      + gambleBlue_amount + '%, #BFC9CA ' + gambleBlue_amount + '%)"></div>' +
+    '<div id = "arrow"><p>&#x2193</p></div>' +
+    '<div id = "outcome-info-prob">' +
+    '<div class = "pie-chart" style="background: conic-gradient(#008450 0% ' + chosen_prob + '%, #BFC9CA ' + chosen_prob + '% 100%);"></div>' +
     '</div>';
 
-  // add the circle showing the probability info of gamble Blue
+  // add the circle showing the amount info
   html_string = html_string +
-    '<div id = "outcome-info-probBlue">' +
-    '<div class = "pie-chart" style="background: conic-gradient(white 0% ' + probBlue_amount +'%, red ' 
-                                        + probBlue_amount +'% 100%);"></div>' +
+    '<div id = "outcome-message"></div>' + // do not show the outcome in text yet
+    '<div id = "outcome-info-amount">' +
+    '<div class = "amount_bar" style="background: linear-gradient(to top, #008450, #008450 ' + chosen_amount + '%, #BFC9CA '+ chosen_amount + '%)"></div>' +
     '</div>';
 
-  // add an arrow above the pie chart
+  // add win and loss sound
   html_string = html_string +
-    '<div id = "probBlue-text"><p>&#x2193</p></div>';
-
-  
-  html_string = html_string +
-     '<div id = "gambleBlueAmount-text"><p><br></p></div>' +
-     '<audio id="win_sound" src="cash.wav"></audio>';
-    
-  html_string = html_string +
-      '<div id = "gambleBlueAmount-text"><p><br></p></div>' +
-      '<img src onerror= "gamble_outcomeBlue();">' +
-      '<audio id="loss_sound" src="buzz.wav"></audio>'
+      '<img src onerror= "show_gamble_outcome();">' +
+      '<audio id="loss_sound" src="buzz.wav"></audio>' +
+      '<audio id="win_sound" src="cash.wav"></audio>';
 
   // add the closing div tag
-    html_string = html_string + '</div>';
-     
-    return html_string;
-
-}
-
-// functions to show outcomes
-function gamble_outcomeBlue() {
-
-  // spin the wheel
-  var wheel = document.getElementById("outcome-info-probBlue");
-  // show outcome text and play audio after 1500 milliseconds
-  var myVar = setTimeout(show_outcome, 2000); //increased 500 ms
-  
-  
-  // DEBUGGING NEEDED - Discuss with ZC!
-  var spin_degrees = 180 * randomIntFromInterval(6,7) + randomIntFromInterval (5, 85);
-  if (spin_degrees >= 1190 && spin_degrees <= 1340) { // this part not working
-      outcome = 'no loss'
-    } else {
-      outcome = 'loss';
-  }
-  wheel.style.transform = "rotate(" + spin_degrees + "deg)";
-
-  function show_outcome() {
-    if (outcome === 'no loss') {
-        document.getElementById("choice-reminder").innerHTML = '<p> No Loss incurred!</p>';
-        document.getElementById("win_sound").play();
-     } else if (outcome === 'loss') { 
-       document.getElementById("gambleBlueAmount-text").innerHTML = '<p>-'+  gambleBlue_amount + '</p>';
-       document.getElementById("loss_sound").play();
-    }
-  }
-}
-
-var risk_outcomeBlue = {
-  type: jsPsychHtmlMouseResponse,
-  stimulus: 'placeholder',
-  choices: [],
-  tracking_elements: [],
-  trial_duration: 3000,
-  on_start: function(risk_outcomeBlue){
-    risk_outcomeBlue.stimulus = create_html_outcome_gambleBlue();
-  }
-  //,
-   //on_finish: function(data){
-   //outcome = "Gamble Blue";
-   //outcome_amount = gambleBlue_amount;
-  //}
-
-}   
-  
-  var if_node_GambleBlue = {
-    timeline: [risk_outcomeBlue],
-    conditional_function: function(){
-        if(choice === "Gamble Blue"){
-            return true;
-        } else {
-            return false;
-        }
-    
-    }
-}
-
-/********************************************************
-            Decision Outcome - Gamble Yellow
-********************************************************/
-// function to generate the html string when participants accept the gamble Yellow
-var create_html_outcome_gambleYellow = function(show_result = false){
-
-var html_string = '<div class = "game-interface">';
-
-// outcome reminder 
-  html_string = html_string +
-  '<div id = "choice-reminder"></div>';  
-
-// add the circle showing the gamble Yellow amount
-  html_string = html_string +
-  '<div id = "outcome-info-gambleYellow">' +
-  '<div class = "amount_bar" style="background: linear-gradient(to top, red , red ' 
-                            + gambleYellow_amount + '%, #BFC9CA ' + gambleYellow_amount + '%)"></div>' +
-  '</div>';
-
-// add the circle showing the probability info of gamble Yellow
-html_string = html_string +
-  '<div id = "outcome-info-probYellow">' +
-  '<div class = "pie-chart" style="background: conic-gradient(white 0% ' + probYellow_amount +'%, red ' 
-                                      + probYellow_amount +'% 100%);"></div>' +
-  '</div>';
-
-
-// add an arrow above the pie chart
-html_string = html_string +
-  '<div id = "probYellow-text"><p>&#x2193</p></div>';
-
-html_string = html_string +
-    '<div id = "gambleYellowAmount-text"><p><br></p></div>' +
-    '<audio id="win_sound" src="cash.wav"></audio>';
-
-html_string = html_string +
-  '<div id = "gambleYellowAmount-text"><p><br></p></div>' +
-  '<img src onerror="gamble_outcomeYellow();">' +
-  '<audio id="loss_sound" src="buzz.wav"></audio>';
-
-
-// add the closing div tag
   html_string = html_string + '</div>';
-   
+
   return html_string;
 
 }
 
 // functions to show outcomes
-// functions to show outcomes
-function gamble_outcomeYellow() {
+function show_gamble_outcome() {
 
-// spin the wheel
-var wheel = document.getElementById("outcome-info-probYellow");
-// show outcome text and play audio after 1500 milliseconds
-var myVar = setTimeout(show_outcome, 2000); //increased 500 ms
+  // spin the wheel
+  var wheel = document.getElementById("outcome-info-prob");
 
+  // randomly select a number between 1 and 360; this will be how many degrees the wheel will spin
+  var spin_degrees = randomIntFromInterval(1, 360);
 
-// DEBUGGING NEEDED - Discuss with ZC!
-var spin_degrees = 180 * randomIntFromInterval(6,7) + randomIntFromInterval (5, 85);
-  if (spin_degrees >= 1190 && spin_degrees <= 1340) { // this part not working
-      outcome = 'no win'
-    } else {
-      outcome = 'win';
+  // suppose the chosen option has 10% of the area colored green (10% * 360 = 36 degrees).
+  // it means the wheel will need to spin between 90% * 360 and 360 degress in order to land on green.
+  // so, for an option that has x% of winning, the wheel will need to spin between 360 * (100 - x%) and 359 degrees in order to land on green.
+  if (spin_degrees <= 360 * (100 - chosen_prob) / 100) {
+    outcome = 'no_win';
+  } else {
+    outcome = 'win';
   }
-  wheel.style.transform = "rotate(" + spin_degrees + "deg)";
+  // TODO: ZC idea: save the spin_degrees variable in the output file as well?
+  // this will potentially allow us to see whether the outcomes are 'near' wins or losses.
+
+  // to create the impression that the wheel is spinning quickly
+  // we will spin the wheel for another 3 or 4 full circles
+  // since one full circle is 360 degress, it does not change the outcome
+  var spin_degrees_total = spin_degrees + 360 * randomIntFromInterval(3, 4);
+
+  wheel.style.transform = "rotate(" + spin_degrees_total + "deg)";
+
+  // show outcome text and play audio after 2000 milliseconds
+  var myVar = setTimeout(show_outcome, 2000);
 
   function show_outcome() {
     if (outcome === 'win') {
-        document.getElementById("gambleYellowAmount-text").innerHTML = '<p>'+  gambleYellow_amount + '</p>';
-        document.getElementById("win_sound").play();
-     } else if (outcome === 'no win') { 
-       document.getElementById("choice-reminder").innerHTML = '<p> No Wins incurred!</p>';
+      outcome_amount = chosen_amount;
+      document.getElementById("outcome-message").innerHTML = '<p>+'+ chosen_amount + '</p>';
+      document.getElementById("win_sound").play();
+     } else if (outcome === 'no_win') {
+       outcome_amount = 0;
+       document.getElementById("outcome-message").innerHTML = '<p>0</p>';
        document.getElementById("loss_sound").play();
+       // TODO: ZC - need to find a neutral sound for the no-win outcome.
+       // the current loss sound may be better suited for the loss outcome in the loss-only version.
     }
   }
 }
 
- var risk_outcomeYellow = {
+var risk_outcome = {
   type: jsPsychHtmlMouseResponse,
   stimulus: 'placeholder',
   choices: [],
   tracking_elements: [],
   trial_duration: 3000,
-  on_start: function(risk_outcomeYellow){
-  risk_outcomeYellow.stimulus = create_html_outcome_gambleYellow();
-  }//,
-  //on_finish: function(data){
-  // outcome = "Gamble Yellow";
-   //outcome_amount = gambleYellow_amount;
- //}
-}
-
-
-var if_node_GambleYellow = {
-  timeline: [risk_outcomeYellow],
-  conditional_function: function(){
-      if(choice === "Gamble Yellow"){
-          return true;
-      } else {
-          return false;
-      }
+  on_start: function(risk_outcome){
+    risk_outcome.stimulus = create_html_outcome();
   }
 }
-
 
 /********************************************************
   Register the data from one trial
@@ -1004,7 +999,7 @@ timeline.push(enter_gender);
 timeline.push(enter_fullscreen);
 
 var practice = {
-  timeline: [risk_start, risk_sampling_decide, if_node_GambleBlue, if_node_GambleYellow, risk_data],
+  timeline: [risk_start, risk_sampling_decide, risk_outcome, risk_data],
   timeline_variables: practice_trials,
   randomize_order: false
 };
@@ -1013,7 +1008,7 @@ timeline.push(instruction_practice);
 timeline.push(practice);
 
 var exp = {
-  timeline: [risk_start, risk_sampling_decide, if_node_GambleBlue, if_node_GambleYellow, risk_data],
+  timeline: [risk_start, risk_sampling_decide, risk_outcome, risk_data],
   timeline_variables: trials,
   randomize_order: false
 };
@@ -1031,3 +1026,5 @@ jsPsych.run(timeline);
 
 </script>
 </html>
+
+

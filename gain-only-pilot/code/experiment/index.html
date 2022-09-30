@@ -290,7 +290,7 @@ for (var i = 0; i < exp_trials.length; i++) {
   trials.push(one_trial);
 }
 
-ß
+
 /********************************************************
 Add some more information to each trial.
 ********************************************************/
@@ -410,7 +410,8 @@ var instruct_images = [ 'Instructions/Slide1.png', 'Instructions/Slide2.png',
                         'Instructions/Slide3.png', 'Instructions/Slide4.png',
                         'Instructions/Slide5.png', 'Instructions/Slide6.png',
                         'Instructions/Slide7.png', 'Instructions/Slide8.png',
-                        'Instructions/Slide9.png'];
+                        'Instructions/Slide9.png','Instructions/Slide10.png',
+                        'Instructions/Slide11.png','Instructions/Slide12.png'];
 
 var all_audios = ['cash.wav', 'buzz.wav'];
 
@@ -440,7 +441,10 @@ var instruction_practice = {
           '<img src="' + instruct_images[4] + '"></img>',
           '<img src="' + instruct_images[5] + '"></img>',
           '<img src="' + instruct_images[6] + '"></img>',
-          '<img src="' + instruct_images[7] + '"></img>'],
+          '<img src="' + instruct_images[7] + '"></img>',
+          '<img src="' + instruct_images[8] + '"></img>',
+          '<img src="' + instruct_images[9] + '"></img>',
+          '<img src="' + instruct_images[10]+ '"></img>'],
   show_clickable_nav: true,
   allow_backward: true,
   on_start: function(){
@@ -451,7 +455,7 @@ var instruction_practice = {
 
 var instruction_exp = {
   type: jsPsychInstructions,
-  pages: ['<img src="' + instruct_images[8] + '"></img>'],
+  pages: ['<img src="' + instruct_images[11] + '"></img>'],
   show_clickable_nav: true,
   on_start: function(){
     block_type = "exp";
@@ -527,8 +531,8 @@ var enter_subjectID = {
     var data_row = "subjectID, age, gender, nationality, exp_start_time, browser, browser_version, width, height, vsync_rate, os\n";
     appendData('RiskyMouse_demo_' + subjID +'.csv', data_row);
 
-    var data_row = "subjectID, block_type, block_number, trial_number, win_location, loss_location, " +
-                   "A_amount, A_prob, B_amount, B_prob, startRT, choiceRT, choice, outcome, outcome_amount\n";
+    var data_row = "subjectID, block_type, block_number, trial_number" +
+                   "A_amount, A_prob, B_amount, B_prob, startRT, choiceRT, choice, outcome, outcome_amount, spin_degrees\n"; //check with ZC
     appendData('RiskyMouse_main_'+ subjID +'.csv', data_row); //removed variable - sampleRT
 
     var data_row = "subjectID, block_type, block_number, trial_number, phase, mouse_rt, x, y, element, info_type\n";
